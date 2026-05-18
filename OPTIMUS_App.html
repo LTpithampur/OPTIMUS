@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OPTIMUS · Optimize every millimeter</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f4f6fa;
+  --panel:#ffffff;
+  --line:#e1e6ee;
+  --line2:#c8cfdb;
+  --ink:#0f172a;
+  --ink2:#475569;
+  --ink3:#94a3b8;
+  --brand:#0f2944;
+  --brand2:#1e3a5f;
+  --accent:#f59e0b;
+  --accent2:#fbbf24;
+  --good:#16a34a;
+  --warn:#d97706;
+  --bad:#dc2626;
+  --info:#0ea5e9;
+  --hl:#fef9c3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'IBM Plex Sans',-apple-system,sans-serif;
+  font-size:13px;line-height:1.45;min-height:100vh;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none}
+input,select,textarea{outline:none}
+a{color:inherit;text-decoration:none}
+
+/* utility */
+.mono{font-family:'IBM Plex Mono',monospace;font-feature-settings:'tnum'}
+.display{font-family:'IBM Plex Sans Condensed',sans-serif;font-weight:700}
+.cap{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.cap-sm{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#cbd5e1;font-weight:500}
+
+/* ───────── Header / topbar (deep blue gradient) ───────── */
+.app{min-height:100vh;display:flex;flex-direction:column}
+.hdr{
+  background:linear-gradient(180deg,var(--brand) 0%,var(--brand2) 100%);
+  color:#fff;
+  padding:14px 22px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--accent);
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+  position:sticky;top:0;z-index:50;
+}
+.hdr-brand{display:flex;align-items:center;gap:14px}
+.hdr-mark{
+  width:38px;height:38px;
+  background:var(--accent);
+  border-radius:6px;
+  display:grid;place-items:center;
+  color:var(--brand);
+  font-family:'IBM Plex Sans Condensed';font-weight:700;font-size:22px;
+}
+.hdr-name{font-family:'IBM Plex Sans Condensed';font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px;line-height:1}
+.hdr-tag{font-size:10px;color:#cbd5e1;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;font-weight:500}
+.hdr-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.led{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#cbd5e1;font-weight:500}
+.led::before{content:'';width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:pulse 2s infinite}
+.led.off::before{background:rgba(255,255,255,.3);box-shadow:none;animation:none}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+.btn{
+  background:#fff;color:var(--brand);
+  border:1px solid #fff;
+  padding:7px 14px;border-radius:5px;
+  font-size:12px;font-weight:600;letter-spacing:.3px;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .15s;
+}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--brand)}
+.btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+.btn-ghost:hover{background:rgba(255,255,255,.1);border-color:#fff;color:#fff}
+.btn-amber{background:var(--accent);color:var(--brand);border-color:var(--accent);font-weight:700}
+.btn-amber:hover{background:var(--accent2);border-color:var(--accent2);color:var(--brand)}
+.btn-cyan{background:var(--info);color:#fff;border-color:var(--info);font-weight:700}
+.btn-cyan:hover{filter:brightness(1.1);color:#fff;border-color:var(--info)}
+.btn-lg{padding:11px 26px;font-size:13px}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-full{width:100%;justify-content:center}
+
+/* ───────── Main / layout ───────── */
+.main{flex:1;padding:18px 22px;max-width:1700px;margin:0 auto;width:100%}
+.grid{display:grid;gap:14px}
+.grid-cfg{grid-template-columns:1.6fr .7fr}
+.grid-io{grid-template-columns:1fr 1fr;margin-top:14px}
+.grid-kpi{grid-template-columns:repeat(3,1fr);margin-top:14px}
+.grid-results{grid-template-columns:1fr;margin-top:14px}
+
+/* ───────── Cards / panels ───────── */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.panel-h{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;
+  border-bottom:1px solid var(--line);
+  background:#fff;
+}
+.panel-t{
+  font-family:'IBM Plex Sans Condensed';font-size:14px;font-weight:700;
+  color:var(--brand);letter-spacing:.5px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.panel-t::before{content:'';width:4px;height:14px;background:var(--accent);border-radius:2px}
+.panel-meta{font-size:11px;color:var(--ink3);font-family:'IBM Plex Mono'}
+.panel-b{padding:14px 16px;background:#fff}
+.panel-b-flush{padding:0;background:#fff}
+
+/* ───────── Form fields ───────── */
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:10px;color:var(--ink2);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.fld label .req{color:var(--bad);margin-left:2px}
+.fld input,.fld select{
+  padding:7px 10px;
+  border:1px solid var(--line2);
+  border-radius:4px;
+  background:#fff;
+  font-size:13px;width:100%;
+  color:var(--ink);
+}
+.fld input:focus,.fld select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.fld input[readonly]{background:#f8fafc;color:var(--ink2)}
+.fld input.mono{font-family:'IBM Plex Mono'}
+.fld .hint{font-size:10px;color:var(--ink3);margin-top:2px;font-family:'IBM Plex Mono'}
+.fld .hint.ok{color:var(--good)}
+.fld .hint.warn{color:var(--warn)}
+.fld .hint.err{color:var(--bad)}
+
+.row5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.row2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+
+/* ───────── Tables (input) ───────── */
+.tbl-wrap{
+  max-height:520px;overflow:auto;
+  border:1px solid var(--line);border-radius:0;
+  background:#fff;
+}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+.tbl thead{position:sticky;top:0;z-index:5;background:var(--brand)}
+.tbl thead th{
+  color:#fff;font-weight:600;text-align:left;
+  padding:8px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  border-right:1px solid rgba(255,255,255,.1);
+}
+.tbl thead th:last-child{border-right:none}
+.tbl tbody td{padding:0;border-bottom:1px solid var(--line)}
+.tbl tbody tr:nth-child(even) td{background:#fafbfd}
+.tbl tbody tr:hover td{background:var(--hl)}
+.tbl tbody td:first-child{
+  text-align:center;font-family:'IBM Plex Mono';font-size:10px;color:var(--ink3);
+  padding:0 6px;width:36px;
+}
+.tbl input{
+  width:100%;border:none;background:transparent;
+  padding:8px 10px;font-family:'IBM Plex Mono';font-size:12px;text-align:right;
+  color:var(--ink);
+}
+.tbl input.text{text-align:left;font-family:'IBM Plex Sans'}
+.tbl input:focus{outline:2px solid var(--accent);outline-offset:-2px;background:#fff}
+.tbl input::placeholder{color:#cbd5e1;font-family:'IBM Plex Sans';font-size:11px;font-style:italic}
+
+.tbl-foot{
+  padding:8px 14px;border-top:1px solid var(--line);
+  background:#f8fafc;
+  font-size:11px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.tbl-foot .tip{color:var(--ink3);font-size:11px}
+.tbl-foot .total{font-family:'IBM Plex Mono';color:var(--brand);font-weight:600;font-size:12px}
+
+/* ───────── Drop zone ───────── */
+.drop-zone{
+  border:1.5px dashed var(--line2);
+  border-radius:6px;padding:18px;text-align:center;cursor:pointer;
+  transition:all .18s;
+  background:#f8fafc;
+  margin-bottom:14px;
+}
+.drop-zone:hover, .drop-zone.dragover{border-color:var(--accent);background:#fef9c3}
+.drop-zone .icon{font-size:24px;margin-bottom:6px;opacity:.6;color:var(--accent)}
+.drop-zone .lbl{font-family:'IBM Plex Sans';font-size:12px;color:var(--brand);font-weight:600;letter-spacing:.3px}
+.drop-zone .sub{font-size:10px;color:var(--ink3);margin-top:4px}
+.drop-zone.dragover .lbl{color:var(--accent)}
+
+/* ───────── Run zone ───────── */
+.run-zone{
+  margin:18px 0;padding:14px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-top:3px solid var(--accent);
+  border-radius:8px;
+  display:flex;align-items:center;gap:14px;justify-content:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.run-status{font-size:12px;color:var(--ink2);flex:1;font-family:'IBM Plex Sans'}
+.run-status .ok{color:var(--good);font-weight:600}
+.run-status .warn{color:var(--warn);font-weight:600}
+.run-status .err{color:var(--bad);font-weight:600}
+
+/* ───────── Progress engine ───────── */
+.progress-card{display:none;margin-top:14px}
+.progress-card.show{display:block}
+.prog-stages{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.prog-stage{
+  flex:1;min-width:140px;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:5px;background:#fff;
+  font-size:11px;position:relative;overflow:hidden;
+}
+.prog-stage .num{font-family:'IBM Plex Mono';font-size:9px;color:var(--ink3);letter-spacing:1px;display:block;margin-bottom:3px;font-weight:600}
+.prog-stage .lbl{font-weight:500;color:var(--ink2)}
+.prog-stage.active{border-color:var(--accent);background:#fef9c3}
+.prog-stage.active .lbl{color:var(--brand);font-weight:600}
+.prog-stage.active::before{
+  content:'';position:absolute;left:0;top:0;height:100%;width:100%;
+  background:linear-gradient(90deg,transparent,rgba(245,158,11,.18),transparent);
+  animation:sweep 1.5s linear infinite;
+}
+.prog-stage.done{border-color:var(--good);background:#dcfce7}
+.prog-stage.done .lbl{color:var(--good);font-weight:600}
+.prog-stage.done .num::after{content:' ✓'}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+.prog-bar-wrap{height:6px;background:#e1e6ee;border-radius:3px;overflow:hidden;margin:14px 0}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;width:0%}
+.prog-stats{display:flex;justify-content:space-between;font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);flex-wrap:wrap;gap:10px}
+.prog-stats span{display:flex;gap:6px}
+.prog-stats .lbl{color:var(--ink3)}
+.prog-stats .val{color:var(--brand);font-weight:600}
+
+/* ───────── KPI cards (3-card scrap dashboard) ───────── */
+.kpi{
+  background:#fff;border:1px solid var(--line);border-radius:8px;
+  padding:14px 18px;position:relative;overflow:hidden;
+  transition:transform .15s, border-color .15s;
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.kpi.ok::before{background:var(--good)}
+.kpi.warn::before{background:var(--warn)}
+.kpi.bad::before{background:var(--bad)}
+.kpi.cyan::before{background:var(--info)}
+.kpi:hover{border-color:var(--line2)}
+.kpi-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:8px}
+.kpi-val{font-family:'IBM Plex Mono';font-size:32px;font-weight:700;color:var(--brand);line-height:1;letter-spacing:-.02em}
+.kpi-val .u{font-size:16px;color:var(--ink2);margin-left:4px;font-weight:400}
+.kpi-sub{font-size:11px;color:var(--ink2);margin-top:8px;font-family:'IBM Plex Mono';display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.kpi-sub .delta.up{color:var(--good);font-weight:600}
+.kpi-sub .delta.dn{color:var(--bad);font-weight:600}
+.kpi-bar{height:4px;background:#e1e6ee;border-radius:2px;overflow:hidden;margin-top:10px;position:relative}
+.kpi-bar-fill{height:100%;background:var(--accent);transition:width .8s cubic-bezier(.4,0,.2,1)}
+.kpi.ok .kpi-bar-fill{background:var(--good)}
+.kpi.warn .kpi-bar-fill{background:var(--warn)}
+.kpi.bad .kpi-bar-fill{background:var(--bad)}
+
+/* small KPI grid */
+.skpi{
+  background:#fff;border:1px solid var(--line);border-radius:6px;
+  padding:11px 14px;
+}
+.skpi-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;font-weight:600}
+.skpi-val{font-family:'IBM Plex Mono';font-size:18px;font-weight:700;color:var(--brand);line-height:1}
+.skpi-val .u{font-size:11px;color:var(--ink2);font-weight:400;margin-left:3px}
+.skpi-sub{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink3);margin-top:4px}
+.row6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+
+/* ───────── Multi-summary scenarios ───────── */
+.scenarios{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+.scenario{
+  background:#fff;border:1px solid var(--line);
+  border-left:3px solid var(--ink3);border-radius:5px;
+  padding:11px 13px;cursor:pointer;transition:all .15s;
+  position:relative;
+}
+.scenario:hover{border-color:var(--line2)}
+.scenario.active{border-color:var(--accent);background:#fef9c3;border-left-color:var(--accent)}
+.scenario .name{font-family:'IBM Plex Sans Condensed';font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.3px;margin-bottom:4px}
+.scenario .desc{font-size:10px;color:var(--ink2);margin-bottom:8px;line-height:1.3}
+.scenario .stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-family:'IBM Plex Mono';font-size:10px}
+.scenario .stat-l{color:var(--ink3)}
+.scenario .stat-v{color:var(--brand);font-weight:700;text-align:right}
+.scenario.active .stat-v{color:var(--brand)}
+.scenario.recommended::after{content:'★';position:absolute;color:var(--accent);font-size:16px;top:6px;right:10px}
+
+/* ───────── Material flow bar ───────── */
+.flow-bar{
+  height:36px;border-radius:5px;display:flex;overflow:hidden;
+  font-family:'IBM Plex Mono';font-size:10px;font-weight:600;
+  border:1px solid var(--line);
+}
+.flow-bar > div{display:flex;align-items:center;justify-content:center;color:#fff;padding:0 8px;white-space:nowrap;overflow:hidden;transition:flex .6s}
+.f-cut{background:var(--good)}
+.f-pin{background:var(--accent);color:var(--brand)}
+.f-off{background:var(--info)}
+.f-scrap{background:var(--bad);color:#fff}
+.flow-leg{display:flex;gap:18px;margin-top:10px;font-size:11px;color:var(--ink2);flex-wrap:wrap}
+.flow-leg .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* ───────── Pattern visualisation ───────── */
+.pat-list{display:flex;flex-direction:column;gap:7px;font-family:'IBM Plex Mono';font-size:10px;max-height:520px;overflow:auto;padding-right:6px}
+.pat-row{display:grid;grid-template-columns:130px 1fr 100px;gap:12px;align-items:center}
+.pat-meta{color:var(--ink2);font-size:11px}
+.pat-meta b{color:var(--brand);font-weight:700;display:block;font-size:12px}
+.pat-meta .src{font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;font-weight:600}
+.pat-meta .src.pr{color:var(--accent)}
+.pat-bar{
+  height:26px;background:#f1f5f9;border:1px solid var(--line);
+  border-radius:4px;display:flex;overflow:hidden;
+}
+.pat-cut{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;border-right:1px solid rgba(255,255,255,.4);padding:0 4px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;font-size:10px}
+.pat-cut.c1{background:#0d9488}
+.pat-cut.c2{background:#0891b2}
+.pat-cut.c3{background:#7c3aed}
+.pat-cut.c4{background:#c026d3}
+.pat-pin{background:#475569;color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center}
+.pat-eb{background:var(--bad);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.pat-off{background:var(--info);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:700}
+.pat-stat{font-size:11px;text-align:right}
+.pat-stat .b{font-weight:700;color:var(--brand)}
+.pat-stat .s{color:var(--ink3);font-size:10px}
+
+/* ───────── Demand bars ───────── */
+.dem-list{display:flex;flex-direction:column;gap:6px}
+.dem-row{display:grid;grid-template-columns:90px 1fr 90px;gap:10px;align-items:center;font-size:11px}
+.dem-lbl{font-family:'IBM Plex Mono';color:var(--ink2)}
+.dem-bar{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.dem-fill{height:100%;background:linear-gradient(90deg,#16a34a,#86efac);border-radius:4px}
+.dem-fill.short{background:linear-gradient(90deg,#dc2626,#fca5a5)}
+.dem-val{font-family:'IBM Plex Mono';font-weight:700;text-align:right;color:var(--brand)}
+.dem-val.short{color:var(--bad)}
+
+/* ───────── Cutting plan table ───────── */
+.cp-tbl{width:100%;border-collapse:collapse;font-size:11px;background:#fff;border:1px solid var(--line)}
+.cp-tbl thead th{
+  background:var(--brand);color:#fff;text-align:left;padding:8px 10px;
+  font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;
+  border-right:1px solid rgba(255,255,255,.15);
+}
+.cp-tbl tbody td{padding:7px 10px;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono';font-size:11px;color:var(--ink)}
+.cp-tbl tbody tr:nth-child(even){background:#fafbfd}
+.cp-tbl tbody tr:hover{background:#fef9c3}
+.cp-tbl tfoot td{padding:8px 10px;font-family:'IBM Plex Mono';font-weight:700;color:var(--brand);background:#fef9c3 !important;border-top:2px solid var(--accent)}
+.badge{
+  display:inline-block;padding:3px 9px;border-radius:3px;
+  font-family:'IBM Plex Mono';font-size:9px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.b-good{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.b-warn{background:#fef3c7;color:#a16207;border:1px solid #fcd34d}
+.b-bad{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+.b-cyan{background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc}
+.b-pr{background:#fef3c7;color:#a16207;border:1px solid #fcd34d;font-weight:800}
+.b-inv{background:#f1f5f9;color:var(--ink2);border:1px solid var(--line2)}
+
+/* ───────── Tabs ───────── */
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:14px;gap:0}
+.tab{
+  padding:10px 22px;
+  font-size:12px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;
+  color:var(--ink2);background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:color .15s, border-color .15s;
+}
+.tab.active{color:var(--brand);border-color:var(--accent)}
+.tab:hover:not(.active){color:var(--brand)}
+
+/* ───────── Modal ───────── */
+.modal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(15,41,68,.55);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;
+  overflow-y:auto;
+}
+.modal-content{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:24px;
+  max-width:1100px;width:100%;
+  box-shadow:0 20px 60px rgba(15,41,68,.25);
+}
+
+/* ───────── Footer ───────── */
+.footer{
+  text-align:center;padding:18px 22px;
+  font-size:11px;color:var(--ink3);
+  letter-spacing:.5px;border-top:1px solid var(--line);
+  margin-top:30px;background:#fff;
+}
+.footer b{color:var(--brand);font-weight:700}
+
+/* ───────── Scrollbars ───────── */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#f1f5f9}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--ink3)}
+
+/* ───────── Hidden / utility ───────── */
+.hidden{display:none !important}
+.alert{padding:10px 14px;border-radius:5px;font-size:12px;margin-top:14px;display:flex;align-items:center;gap:8px;font-family:'IBM Plex Sans'}
+.alert.info{background:#e0f2fe;color:#0369a1;border-left:3px solid var(--info)}
+.alert.warn{background:#fef3c7;color:#a16207;border-left:3px solid var(--warn)}
+.alert.err{background:#fee2e2;color:#b91c1c;border-left:3px solid var(--bad)}
+.alert.ok{background:#dcfce7;color:#15803d;border-left:3px solid var(--good)}
+
+/* ───────── Print ───────── */
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  body{background:#fff;font-size:10px}
+  .hdr,.run-zone,.tabs,.no-print,#cmpEntryCard,.progress-card{display:none !important}
+  .panel{background:#fff;border:1px solid #999;page-break-inside:avoid}
+  .kpi{background:#fff;border:1px solid #888;padding:8px}
+  .kpi-val{font-size:18px}
+  .grid-kpi{grid-template-columns:repeat(3,1fr) !important}
+  .row6{grid-template-columns:repeat(6,1fr) !important}
+  .cp-tbl thead th{background:#0f2944 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .badge,.flow-bar > div{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-only{display:block !important}
+}
+.print-only{display:none}
+@media print{.print-hdr{display:block !important;margin-bottom:10px;border-bottom:2px solid #0f2944;padding-bottom:8px}}
+
+/* ───────── Responsive ───────── */
+@media (max-width:1100px){
+  .grid-cfg{grid-template-columns:1fr}
+  .grid-io{grid-template-columns:1fr}
+  .grid-kpi{grid-template-columns:1fr}
+  .row6{grid-template-columns:repeat(3,1fr)}
+  .scenarios{grid-template-columns:1fr 1fr}
+  .row5{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═════════════ HEADER ═════════════ -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-mark">Ω</div>
+    <div>
+      <div class="hdr-name">OPTIMUS</div>
+      <div class="hdr-tag">Optimize every millimeter</div>
+    </div>
+  </div>
+  <div class="hdr-status">
+    <span class="led" id="serverLed">Browser engine</span>
+    <span class="cap-sm" id="hdrTime"></span>
+    <button class="btn" onclick="loadDemo()">📂 Demo</button>
+    <button class="btn" onclick="document.getElementById('fileInp').click()">⬆ Upload</button>
+    <input type="file" id="fileInp" accept=".json,.xlsx,.xls" onchange="onFileUpload(event)" style="display:none">
+    <button class="btn" onclick="saveJSON()">💾 Save</button>
+    <button class="btn" onclick="showHistory()">📊 History</button>
+    <button class="btn" onclick="resetAll()">⟲ Reset</button>
+    <button class="btn btn-amber" onclick="window.print()" id="btnPrint" style="display:none">🖨 Print</button>
+  </div>
+</header>
+
+<!-- ═════════════ MAIN ═════════════ -->
+<main class="main">
+
+<!-- Print-only header (only visible when printing) -->
+<div class="print-hdr print-only">
+  <h1 style="font-family:Syne;font-size:20px;font-weight:800">OPTIMUS · CUTTING PLAN</h1>
+  <div style="font-size:10px;color:#666">Optimize every millimeter · by Sumanta Gayen</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:10px;margin-top:8px;font-family:JetBrains Mono">
+    <div><b>Project:</b> <span id="phProject">—</span></div>
+    <div><b>Section:</b> <span id="phSection">—</span></div>
+    <div><b>Lot:</b> <span id="phLot">—</span></div>
+    <div><b>Date:</b> <span id="phDate">—</span></div>
+    <div><b>Planner:</b> <span id="phUser">—</span></div>
+    <div><b>RM Embossing:</b> <span id="phEmboss">—</span></div>
+    <div><b>RM ID No.:</b> <span id="phRmId">—</span></div>
+    <div><b>Pincher:</b> <span id="phPincher">—</span></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs no-print">
+  <button class="tab active" data-tab="input" onclick="showTab('input',this)">⚙ INPUT</button>
+  <button class="tab" data-tab="result" onclick="showTab('result',this)" id="tabResult">📋 RESULTS</button>
+</div>
+
+<!-- ═════════════ TAB: INPUT ═════════════ -->
+<div id="tab-input">
+
+<!-- Config + Server status -->
+<div class="grid grid-cfg">
+
+<!-- Configuration -->
+<div class="panel">
+  <div class="panel-h">
+    <div class="panel-t">Run Configuration</div>
+    <div class="panel-meta">All fields · OPTIMUS v1.0</div>
+  </div>
+  <div class="panel-b">
+    <div class="row5">
+      <div class="fld">
+        <label>Project Code</label>
+        <input id="projectCode" placeholder="e.g. KEC-PGCIL-765">
+      </div>
+      <div class="fld">
+        <label>Section / RM Code <span class="req">*</span></label>
+        <input id="sectionCode" list="sectionList" placeholder="Type or pick..." oninput="onSectionChange()">
+        <datalist id="sectionList"></datalist>
+        <div class="hint" id="sectionInfo">Auto-fills unit weight & pincher</div>
+      </div>
+      <div class="fld">
+        <label>Lot / Run No.</label>
+        <input id="lotNo" placeholder="LOT-001">
+      </div>
+      <div class="fld">
+        <label>RM Embossing</label>
+        <input id="rmEmbossing" placeholder="Heat / mill mark">
+      </div>
+      <div class="fld">
+        <label>RM ID No.</label>
+        <input id="rmIdNo" placeholder="RMID-XXXXX">
+      </div>
+    </div>
+    <div class="row5" style="margin-top:12px">
+      <div class="fld">
+        <label>Run Date</label>
+        <input id="runDate" type="date">
+      </div>
+      <div class="fld">
+        <label>Planner</label>
+        <input id="plannerName" placeholder="Your name">
+      </div>
+      <div class="fld">
+        <label>Pincher / Kerf (mm)</label>
+        <input id="pincher" type="number" value="80" class="mono" min="0" max="200">
+        <div class="hint">CNC1-7=80 · CNC8-9=125 · AMC=25</div>
+      </div>
+      <div class="fld">
+        <label>End Trim (mm)</label>
+        <input id="endTrim" type="number" value="0" class="mono" min="0" max="200">
+      </div>
+      <div class="fld">
+        <label>Max End-Cut (mm)</label>
+        <input id="endCutMax" type="number" value="200" class="mono" min="0" max="500">
+        <div class="hint">&gt; this needs planner approval</div>
+      </div>
+    </div>
+    <div class="row4" style="margin-top:12px">
+      <div class="fld">
+        <label>Max Cuts / Bar</label>
+        <select id="maxOpen">
+          <option value="2">2 (simple)</option>
+          <option value="3">3 (conservative)</option>
+          <option value="4" selected>4 (default)</option>
+          <option value="6">6 (allow more for small pieces)</option>
+          <option value="8">8 (high — for short cuts in long bars)</option>
+          <option value="12">12 (very high — short pieces only)</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Stock Short Fallback</label>
+        <select id="mrpMode">
+          <option value="" selected>No — use only entered stock (recommended)</option>
+          <option value="12000">Override: allow 12,000 mm bars if short</option>
+          <option value="11000">Override: allow 11,000 mm bars if short</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Server URL (optional)</label>
+        <input id="serverUrl" placeholder="http://192.168.1.50:5000" oninput="checkServer()">
+      </div>
+      <div class="fld">
+        <label>Solver</label>
+        <select id="useServer">
+          <option value="auto" selected>Auto (server if up)</option>
+          <option value="yes">Force MILP server</option>
+          <option value="no">Browser greedy only</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drop zone & shortcuts -->
+<div class="panel">
+  <div class="panel-h">
+    <div class="panel-t">Quick Load</div>
+    <div class="panel-meta">Excel · JSON</div>
+  </div>
+  <div class="panel-b">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInp').click()">
+      <div class="icon">📥</div>
+      <div class="lbl">Drop Excel / JSON here</div>
+      <div class="sub">or click to browse · auto-parses stocks &amp; demand</div>
+    </div>
+    <div class="cap" style="margin-bottom:8px">Engine status</div>
+    <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--ink2);line-height:1.7">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--ink3)">Algorithm</span><span>OPTIMUS v1.0</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--ink3)">Pincher model</span><span class="ok" style="color:var(--good)">match-Excel</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--ink3)">Browser solver</span><span style="color:var(--good)">ready</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--ink3)">Server (MILP)</span><span id="serverHint" style="color:var(--ink3)">not connected</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--ink3)">Sections in master</span><span>630</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--ink3)">Scrap target</span><span style="color:var(--amber)">&lt; 1.5%</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /grid-cfg -->
+
+<!-- Stock + Demand -->
+<div class="grid grid-io">
+
+<div class="panel">
+  <div class="panel-h">
+    <div class="panel-t">Stock Inventory</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="panel-meta" id="stockSum">0 lengths · 0 bars</span>
+      <button class="btn btn-sm" onclick="addStockRow()">+ Row</button>
+      <button class="btn btn-sm btn-ghost" onclick="clearStock()">Clear</button>
+    </div>
+  </div>
+  <div class="panel-b panel-b-flush">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>#</th><th style="text-align:right">Bar Length (mm)</th><th style="text-align:right">Qty (bars)</th><th style="width:36px"></th></tr></thead>
+        <tbody id="stockBody"></tbody>
+      </table>
+    </div>
+    <div class="tbl-foot">
+      <span class="tip">Tab/Enter to navigate · Paste from Excel works</span>
+      <span class="total" id="stockTotal">0 bars · 0 m</span>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <div class="panel-t">Cut Demand</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="panel-meta" id="demandSum">0 jobs · 0 pcs</span>
+      <button class="btn btn-sm" onclick="addDemandRow()">+ Row</button>
+      <button class="btn btn-sm btn-ghost" onclick="clearDemand()">Clear</button>
+    </div>
+  </div>
+  <div class="panel-b panel-b-flush">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Mark No.</th><th style="text-align:right">Cut Length (mm)</th><th style="text-align:right">Qty (pcs)</th><th style="width:36px"></th></tr></thead>
+        <tbody id="demandBody"></tbody>
+      </table>
+    </div>
+    <div class="tbl-foot">
+      <span class="tip">Lengths must be ≤ longest stock</span>
+      <span class="total" id="demandTotal">0 pcs · 0 m</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /grid-io -->
+
+<!-- Generate zone -->
+<div class="run-zone">
+  <div class="run-status" id="runStatus">Configure run, then click GENERATE to start optimization.</div>
+  <button class="btn btn-amber btn-lg" id="genBtn" onclick="generate()">⚡ GENERATE OPTIMIZATION</button>
+</div>
+
+<!-- Progress engine (shown during long runs) -->
+<div class="panel progress-card" id="progressCard">
+  <div class="panel-h">
+    <div class="panel-t">Optimization in Progress</div>
+    <div class="panel-meta" id="progPhase">Initialising...</div>
+  </div>
+  <div class="panel-b">
+    <div class="prog-stages" id="progStages">
+      <div class="prog-stage" data-stage="1"><span class="num">STAGE 01</span><span class="lbl">Parsing input</span></div>
+      <div class="prog-stage" data-stage="2"><span class="num">STAGE 02</span><span class="lbl">Generating patterns</span></div>
+      <div class="prog-stage" data-stage="3"><span class="num">STAGE 03</span><span class="lbl">Building scenarios</span></div>
+      <div class="prog-stage" data-stage="4"><span class="num">STAGE 04</span><span class="lbl">Ranking solutions</span></div>
+      <div class="prog-stage" data-stage="5"><span class="num">STAGE 05</span><span class="lbl">Finalising report</span></div>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="progBar"></div></div>
+    <div class="prog-stats">
+      <span><span class="lbl">Patterns</span><span class="val" id="progPatterns">0</span></span>
+      <span><span class="lbl">Scenarios</span><span class="val" id="progScenarios">0/5</span></span>
+      <span><span class="lbl">Confidence</span><span class="val" id="progConfidence">—</span></span>
+      <span><span class="lbl">Elapsed</span><span class="val" id="progElapsed">0.0s</span></span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-input -->
+
+<!-- ═════════════ TAB: RESULTS ═════════════ -->
+<div id="tab-result" class="hidden">
+
+<!-- Multi-Summary Scenario Picker -->
+<div class="panel" id="scenariosPanel">
+  <div class="panel-h">
+    <div class="panel-t">Solution Scenarios</div>
+    <div class="panel-meta" id="scenariosMeta">5 ranked solutions · click to compare</div>
+  </div>
+  <div class="panel-b">
+    <div class="scenarios" id="scenarios"></div>
+    <div style="font-size:11px;color:var(--ink2);margin-top:4px">
+      ★ = recommended (best total scrap with full demand satisfaction). Pick any scenario to view details below.
+    </div>
+  </div>
+</div>
+
+<!-- 3-Card Scrap Dashboard (OPTIMUS spec) -->
+<div class="grid grid-kpi">
+  <div class="kpi" id="kpiTotal">
+    <div class="kpi-lbl">Total Scrap</div>
+    <div class="kpi-val mono" id="vTotalScrap">0.00<span class="u">%</span></div>
+    <div class="kpi-sub">
+      <span id="vTotalKg">0 kg</span>
+      <span class="cap-sm">Pincher + End-Cut</span>
+    </div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" id="bTotalScrap"></div></div>
+  </div>
+  <div class="kpi cyan">
+    <div class="kpi-lbl">Pincher Allowance</div>
+    <div class="kpi-val mono" id="vPincher">0.00<span class="u">%</span></div>
+    <div class="kpi-sub">
+      <span id="vPincherKg">0 kg</span>
+      <span class="cap-sm">Saw kerf · informational</span>
+    </div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" id="bPincher"></div></div>
+  </div>
+  <div class="kpi" id="kpiEndCut">
+    <div class="kpi-lbl">Extra End-Cut</div>
+    <div class="kpi-val mono" id="vEndCut">0.00<span class="u">%</span></div>
+    <div class="kpi-sub">
+      <span id="vEndCutKg">0 kg</span>
+      <span class="cap-sm">Residuals &lt; min offcut</span>
+    </div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" id="bEndCut"></div></div>
+  </div>
+</div>
+
+<!-- Operational metrics (small KPI grid) -->
+<div class="row6">
+  <div class="skpi"><div class="skpi-lbl">Material Util</div><div class="skpi-val mono" id="sUtil">—</div><div class="skpi-sub">cuts / raw</div></div>
+  <div class="skpi"><div class="skpi-lbl">Total Bars</div><div class="skpi-val mono" id="sBars">—</div><div class="skpi-sub" id="sBarsBreak">—</div></div>
+  <div class="skpi"><div class="skpi-lbl">Patterns</div><div class="skpi-val mono" id="sPatterns">—</div><div class="skpi-sub" id="sSolveTime">—</div></div>
+  <div class="skpi"><div class="skpi-lbl">Demand Met</div><div class="skpi-val mono" id="sDemand">—</div><div class="skpi-sub" id="sShortfall">—</div></div>
+  <div class="skpi"><div class="skpi-lbl">Reusable Offcut</div><div class="skpi-val mono" id="sOffcut">—</div><div class="skpi-sub" id="sOffcutKg">—</div></div>
+  <div class="skpi"><div class="skpi-lbl">Raw Material</div><div class="skpi-val mono" id="sRaw">—</div><div class="skpi-sub" id="sRawM">—</div></div>
+</div>
+
+<!-- Material flow visual -->
+<div class="panel" style="margin-top:14px">
+  <div class="panel-h">
+    <div class="panel-t">Material Flow Breakdown</div>
+    <div class="panel-meta" id="flowMeta">—</div>
+  </div>
+  <div class="panel-b">
+    <div class="flow-bar" id="flowBar"></div>
+    <div class="flow-leg">
+      <span><span class="dot" style="background:var(--green)"></span>Delivered to fabrication</span>
+      <span><span class="dot" style="background:var(--amber)"></span>Pincher allowance (kerf)</span>
+      <span><span class="dot" style="background:var(--cyan)"></span>Reusable offcut</span>
+      <span><span class="dot" style="background:var(--red)"></span>Extra end-cut (residuals)</span>
+    </div>
+  </div>
+</div>
+
+<!-- Cutting plan table -->
+<div class="panel" style="margin-top:14px">
+  <div class="panel-h">
+    <div class="panel-t">Cutting Plan — Shop Floor Print</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="panel-meta" id="planMeta">—</span>
+      <button class="btn btn-sm" onclick="exportExcel()">📥 Excel</button>
+      <button class="btn btn-sm" onclick="exportCSV('plan')">📥 CSV</button>
+    </div>
+  </div>
+  <div class="panel-b panel-b-flush">
+    <div style="overflow-x:auto">
+      <table class="cp-tbl">
+        <thead><tr>
+          <th>#</th><th>Stock<br>Length</th><th>Source</th><th>Bars</th>
+          <th>Cut A</th><th>×</th>
+          <th>Cut B</th><th>×</th>
+          <th>Cut C</th><th>×</th>
+          <th>Cut D</th><th>×</th>
+          <th>End-Bit</th><th>Util %</th><th>Status</th>
+        </tr></thead>
+        <tbody id="cpBody"></tbody>
+        <tfoot id="cpFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Pattern visualization + Demand satisfaction -->
+<div class="grid" style="grid-template-columns:1.6fr 1fr;gap:14px;margin-top:14px">
+  <div class="panel">
+    <div class="panel-h">
+      <div class="panel-t">Pattern Visualisation</div>
+      <div class="panel-meta">Bars scaled to longest stock used</div>
+    </div>
+    <div class="panel-b">
+      <div class="pat-list" id="patList"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h">
+      <div class="panel-t">Demand Satisfaction</div>
+      <div class="panel-meta" id="demSatMeta">—</div>
+    </div>
+    <div class="panel-b">
+      <div class="dem-list" id="demList"></div>
+
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+        <div class="cap" style="margin-bottom:10px">New Procurement Required</div>
+        <div id="prList" style="font-family:'JetBrains Mono';font-size:11px"></div>
+      </div>
+
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+        <div class="cap" style="margin-bottom:10px">Reusable Offcut Stock</div>
+        <div id="offcutList" style="font-family:'JetBrains Mono';font-size:11px"></div>
+      </div>
+
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+        <div class="cap" style="margin-bottom:10px">Balance / Shortage</div>
+        <div id="shortList" style="font-family:'JetBrains Mono';font-size:11px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ═════════════ REPORTS PANEL ═════════════ -->
+<div class="panel" style="margin-top:14px">
+  <div class="panel-h">
+    <div class="panel-t">Industrial Reports</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="panel-meta" id="reportsMeta">8 reports · downloadable</span>
+      <button class="btn btn-sm" style="background:var(--accent);color:var(--brand);border-color:var(--accent);font-weight:700" onclick="exportExcel()">📥 Export All to Excel</button>
+    </div>
+  </div>
+  <div class="panel-b">
+    <div class="tabs" style="margin-bottom:14px;border-bottom:1px solid var(--line)">
+      <button class="tab active" data-rtab="scrap"      onclick="showReport('scrap',this)">📉 Scrap Report</button>
+      <button class="tab" data-rtab="endcut"  onclick="showReport('endcut',this)">✂ End-Cut Report</button>
+      <button class="tab" data-rtab="balance" onclick="showReport('balance',this)">📦 Balance Stock</button>
+      <button class="tab" data-rtab="pending" onclick="showReport('pending',this)">⏳ Pending Jobs</button>
+      <button class="tab" data-rtab="compare" onclick="showReport('compare',this)">🔍 Excel Comparison</button>
+    </div>
+
+    <div id="report-scrap" class="rpt-body">
+      <div id="scrapReport"></div>
+    </div>
+    <div id="report-endcut" class="rpt-body hidden">
+      <div id="endcutReport"></div>
+    </div>
+    <div id="report-balance" class="rpt-body hidden">
+      <div id="balanceReport"></div>
+    </div>
+    <div id="report-pending" class="rpt-body hidden">
+      <div id="pendingReport"></div>
+    </div>
+    <div id="report-compare" class="rpt-body hidden">
+      <div id="compareReport"></div>
+    </div>
+  </div>
+</div>
+</div><!-- /tab-result -->
+
+</main>
+
+<!-- ═════════════ FOOTER ═════════════ -->
+<div class="footer no-print">
+  <span style="font-family:Syne;font-weight:700;color:var(--amber)">OPTIMUS</span> ·
+  Optimize every millimeter ·
+  Developed by <b>Sumanta Gayen</b> · v1.0 ·
+  AI-assisted optimization platform for transmission tower manufacturing
+</div>
+
+</div><!-- /app -->
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════
+   OPTIMUS · Cut Optimisation Platform
+   Developed by Sumanta Gayen
+   ═══════════════════════════════════════════════════════════════
+   Algorithm: Pattern enumeration + multi-objective greedy
+   Pincher model: match-Excel (kerf does NOT consume bar length)
+   ═══════════════════════════════════════════════════════════════ */
+
+// Section master
+const SECTION_MASTER = [["10MM PLATE H ASTM A572M GR50",78.5,"SP"],["10MM PLATE H BSEN S355JR",78.5,"SP"],["10MM PLATE H-BSEN-S355JO",78.5,"SP"],["10MM PLATE H-E350A",78.5,"SP"],["10MM PLATE H-E350C",78.5,"SP"],["10MM PLATE-BSEN S275JR",78.5,"SP"],["10MM PLATE-E250A",78.5,"SP"],["10MM PLATE-E250C",78.5,"SP"],["12MM PLATE H ASTM A572M GR50",94.2,"SP"],["12MM PLATE H-BSEN S355JR",94.2,"SP"],["12MM PLATE H-BSEN-S355JO",94.2,"SP"],["12MM PLATE H-E350A",94.2,"SP"],["12MM PLATE H-E350C",94.2,"SP"],["12MM PLATE-BSEN S275JO",94.2,"SP"],["12MM PLATE-BSEN S275JR",94.2,"SP"],["12MM PLATE-E250A",94.2,"SP"],["12MM PLATE-E250C",94.2,"SP"],["14MM PLATE H ASTM A572M GR50",109.9,"SP"],["14MM PLATE H-BSEN S355JO",109.9,"SP"],["14MM PLATE H-BSEN S355JR",109.9,"SP"],["14MM PLATE H-E350A",109.9,"SP"],["14MM PLATE H-E350C",109.9,"SP"],["14MM PLATE-BSEN-S275JR",109.9,"SP"],["14MM PLATE-E250A",109.9,"SP"],["15MM PLATE H ASTM A572M GR50",117.75,"SP"],["16MM DIA ROD-BSEN S275JR",1.6,"SP"],["16MM PLATE H ASTM A572M GR50",125.6,"SP"],["16MM PLATE H BSEN S355JR",125.6,"SP"],["16MM PLATE H-BSEN-S355JO",125.6,"SP"],["16MM PLATE H-E350A",125.6,"SP"],["16MM PLATE H-E350C",125.6,"SP"],["16MM PLATE-BSEN S275JO",125.6,"SP"],["16MM PLATE-BSEN-S275JR",125.6,"SP"],["16MM PLATE-E250A",125.6,"SP"],["16MM PLATE-E250C",125.6,"SP"],["18MM PLATE H-BSEN S355JO",141.3,"DP"],["18MM PLATE H-E350A",141.3,"DP"],["19MM PLATE H ASTM A572M GR50",149.15,"DP"],["20MM PLATE BSEN S275JR",157.0,"DP"],["20MM PLATE H - BSEN S355JO",157.0,"DP"],["20MM PLATE H ASTM A572M GR50",157.0,"DP"],["20MM PLATE H-E350A",157.0,"DP"],["20MM PLATE H-E350C",157.0,"DP"],["20MM PLATE-E250A",157.0,"DP"],["20MM PLATE-E250C",157.0,"DP"],["22MM PLATE H ASTM A572M GR50",172.7,"DP"],["22MM PLATE H-BSEN S355JO",172.7,"DP"],["24MM PLATE H-E350A",188.4,"DP"],["24MM PLATE-E250A",188.4,"DP"],["25MM PLATE H ASTM A572M GR50",196.25,"DP"],["25MM PLATE H-E350A",196.25,"DP"],["25MM PLATE-BSEN-S275JR",196.25,"DP"],["25MM PLATE-E250C",196.25,"DP"],["28MM PLATE H ASTM A572M GR50",219.8,"DP"],["2MM PLATE H-BSEN S355JO",15.7,"SP"],["2MM PLATE-ASTM A36M",15.7,"SP"],["2MM PLATE-BSEN S275JO",15.7,"SP"],["2MM PLATE-BSEN-S275JR",15.7,"SP"],["2MM PLATE-E250A",15.7,"SP"],["30MM PLATE H-E350A",235.5,"DP"],["32MM PLATE H-E350A",251.2,"DP"],["32MM PLATE-E250A",251.2,"DP"],["32MM PLATE-E250C",251.2,"DP"],["35MM PLATE H ASTM A572M GR50",274.75,"DP"],["38X3MM FLAT-ASTM A36M",0.9,"AMC"],["38X6MM FLAT-ASTM A36M",1.8,"AMC"],["3MM PLATE BSEN S275JR",23.55,"SP"],["3MM PLATE-ASTM A36M",23.55,"SP"],["3MM PLATE-BSEN S275JO",23.55,"SP"],["3MM PLATE-E250A",23.55,"SP"],["40x4 FLAT-BSEN-S275JR",1.3,"AMC"],["45X4 FLAT-BSEN S275JR",1.4,"AMC"],["45X4 FLAT-E250A",1.4,"AMC"],["45X5 FLAT-BSEN S275JR",1.8,"AMC"],["45x5 FLAT-BSEN-S275JO",1.8,"AMC"],["4MM PLATE BSEN S275 JO",31.4,"SP"],["4MM PLATE H-BSEN S355JO",31.4,"SP"],["4MM PLATE-BSEN-S275JR",31.4,"SP"],["4MM PLATE-E250A",31.4,"SP"],["50X12 FLAT-BSEN 275JO",4.7,"AMC"],["50X4 FLAT-BSEN S275JR",1.6,"AMC"],["50X4MM FLAT-E250A",1.57,"AMC"],["50X5 FLAT-BSEN S275JR",2.0,"AMC"],["50x5 FLAT-BSEN-S275JO",2.0,"AMC"],["50X5 FLAT-E250A",2.0,"AMC"],["50X5MM FLAT-ASTM A36M",2.0,"AMC"],["50X6 FLAT-BSEN S275JO",2.4,"AMC"],["50X6 FLAT-BSEN S275JR",2.4,"AMC"],["5MM PLATE H ASTM A572M GR50",39.25,"SP"],["5MM PLATE H-E350A",39.25,"SP"],["5MM PLATE-ASTM A36M",39.25,"SP"],["5MM PLATE-BSEN S275JO",39.25,"SP"],["5MM PLATE-BSEN S275JR",39.25,"SP"],["5MM PLATE-BSEN-S275JR",39.25,"SP"],["5MM PLATE-E250A",39.25,"SP"],["5MM PLATE-E250C",39.25,"SP"],["6MM CHEQD. PLATE-BSEN S275JR",53.2,"SP"],["6MM PLATE H ASTM A572M GR50",47.1,"SP"],["6MM PLATE H-BSEN S355JR",47.1,"SP"],["6MM PLATE H-BSEN-S355JO",47.1,"SP"],["6MM PLATE H-E350A",47.1,"SP"],["6MM PLATE H-E350C",47.1,"SP"],["6MM PLATE-ASTM A36M",47.1,"SP"],["6MM PLATE-BSEN S275JO",47.1,"SP"],["6MM PLATE-BSEN S275JR",47.1,"SP"],["6MM PLATE-E250A",47.1,"SP"],["6MM PLATE-E250C",47.1,"SP"],["7MM PLATE H ASTM A572M GR50",54.95,"SP"],["8MM PLATE H ASTM A572M GR50",62.8,"SP"],["8MM PLATE H BSEN S355JR",62.8,"SP"],["8MM PLATE H-BSEN-S355JO",62.8,"SP"],["8MM PLATE H-E350A",62.8,"SP"],["8MM PLATE H-E350C",62.8,"SP"],["8MM PLATE S275JO",62.8,"SP"],["8MM PLATE-BSEN S275JR",62.8,"SP"],["8MM PLATE-E250A",62.8,"SP"],["8MM PLATE-E250C",62.8,"SP"],["9MM PLATE H ASTM A572M GR50",70.65,"SP"],["ISMC 150X75 CHANNEL-E250A",16.8,"DRILLING"],["L100X100X10-ASTM A36M",15.0,"CNC"],["L100X100X10-BSEN S275JO",15.0,"CNC"],["L100X100X10-BSEN S275JR",15.0,"CNC"],["L100X100X10H-ASTM A572M GR50",15.0,"CNC"],["L100X100X10H-BSEN S355JO",15.0,"CNC"],["L100X100X10H-E350A",15.04,"CNC"],["L100x100x11H BSEN S355JO",16.4,"CNC"],["L100X100X11SH-ASTM A572M GR60",16.4,"CNC"],["L100X100X12H-BSEN-S355JO",17.8,"CNC"],["L100X100X5-E250A",7.69,"CNC-2"],["L100X100X6-ASTM A36M",9.26,"CNC-2"],["L100X100X6-BSEN S275JO",9.26,"CNC-2"],["L100X100X6-BSEN S275JR",9.26,"CNC-2"],["L100X100X6-E250A",9.26,"CNC-2"],["L100X100X6-E250C",9.2,"CNC-2"],["L100X100X6H-BSEN S355JR",9.26,"CNC-2"],["L100X100X6H-BSEN-S355JO",9.26,"CNC-2"],["L100X100X6H-E350A",9.26,"CNC-2"],["L100X100X6H-E350C",9.2,"CNC-2"],["L100X100X6SH-ASTM A572M GR60",9.26,"CNC-2"],["L100X100X7-ASTM A36M",10.7,"CNC-2"],["L100X100X7-BSEN S275JO",10.7,"CNC-2"],["L100X100X7-BSEN S275JR",10.7,"CNC-2"],["L100X100X7-E250A",10.73,"CNC-2"],["L100X100X7-E250C",10.7,"CNC-2"],["L100X100X7H BSEN S355JR",10.7,"CNC-2"],["L100X100X7H-BSEN S355JO",10.7,"CNC-2"],["L100X100X7H-E350A",10.73,"CNC-2"],["L100X100X7H-E350C",10.7,"CNC-2"],["L100X100X7SH-ASTM A572M GR60",10.7,"CNC-2"],["L100X100X8-ASTM A36M",12.2,"CNC-2"],["L100X100X8-BSEN S275JO",12.2,"CNC-2"],["L100X100X8-BSEN S275JR",12.2,"CNC-2"],["L100X100X8-E250A",12.18,"CNC-2"],["L100X100X8H-BSEN S355JO",12.2,"CNC-2"],["L100X100X8H-BSEN S355JR",12.2,"CNC-2"],["L100X100X8H-E350A",12.18,"CNC-2"],["L100X100X8H-E350C",12.1,"CNC-2"],["L100X100X8SH-ASTM A572M GR60",12.2,"CNC-2"],["L100X100X9-ASTM A36M",13.6,"CNC-2"],["L100X100X9SH-ASTM A572M GR60",13.6,"CNC-2"],["L110X110X10-ASTM A36M",16.6,"CNC"],["L110X110X10-BSEN S275JO",16.6,"CNC"],["L110X110X10-BSEN S275JR",16.6,"CNC"],["L110X110X10-E250A",16.58,"CNC"],["L110X110X10H BSEN-S355JR",16.6,"CNC"],["L110X110X10H-BSEN S355JO",16.6,"CNC"],["L110X110X10H-E350A",16.58,"CNC"],["L110X110X10H-E350C",16.6,"CNC"],["L110X110X10SH-ASTM A572M GR60",16.6,"CNC"],["L110X110X12-ASTM A36M",19.7,"CNC"],["L110x110x6-E250A",10.2,"CNC-2"],["L110x110x6H-E350A",10.2,"CNC-2"],["L110X110X7 BSEN S275JR",11.8,"CNC"],["L110X110X7-BSEN S275JO",11.8,"CNC"],["L110X110X7-E250A",11.8,"CNC"],["L110X110X7H BSEN-S355JR",11.8,"CNC"],["L110X110X7H-BSEN S355JO",11.8,"CNC"],["L110X110X7H-E350A",11.8,"CNC"],["L110X110X8 BSEN S275JR",13.4,"CNC"],["L110X110X8-ASTM A36M",13.4,"CNC"],["L110X110X8-BSENS275JO",13.4,"CNC"],["L110X110X8-E250A",13.4,"CNC"],["L110X110X8-E250C",13.4,"CNC"],["L110X110X8H BSEN-S355JR",13.4,"CNC"],["L110X110X8H-ASTM A572M GR50",13.4,"CNC"],["L110X110X8H-BSEN S355JO",13.4,"CNC"],["L110X110X8H-E350A",13.4,"CNC"],["L110X110X8H-E350C",13.4,"CNC"],["L110X110X8SH-ASTM A572M GR60",13.4,"CNC"],["L110X110X9-E250A",15.0,"CNC"],["L110X110X9H-E350A",15.0,"CNC"],["L120X120X10-ASTM A36M",18.2,"CNC"],["L120X120X10-BSEN-S275JR",18.2,"CNC"],["L120X120X10-E250A",18.15,"CNC"],["L120X120X10H-BSEN S355JO",18.2,"CNC"],["L120x120x10H-BSEN S355JR",18.2,"CNC"],["L120X120X10H-E350A",18.15,"CNC"],["L120X120X10H-E350C",18.2,"CNC"],["L120X120X10SH-ASTM A572M GR60",18.2,"CNC"],["L120X120X12H-BSEN S355JO",21.6,"CNC"],["L120X120X7-E250A",12.94,"CNC"],["L120X120X7-E250A",12.9,"CNC"],["L120X120X7H-BSEN-S355JO",12.9,"CNC"],["L120X120X7H-E350A",12.9,"CNC"],["L120X120X8-BSEN S275JR",14.7,"CNC"],["L120X120X8-E250A",14.66,"CNC"],["L120x120x8H BSEN S355JR",14.7,"CNC"],["L120X120X8H-BSEN-S355JO",14.7,"CNC"],["L120X120X8H-E350A",14.66,"CNC"],["L120X120X8H-E350C",14.7,"CNC"],["L120X120X8SH-ASTM A572M GR60",14.7,"CNC"],["L120X120X9-E250A",16.5,"CNC"],["L120X120X9H-BSEN-S355JO",16.5,"CNC"],["L120X120X9H-E350A",16.5,"CNC"],["L120X120X9SH-ASTM A572M GR60",16.5,"CNC"],["L130x130x10 BSEN S275JR",19.8,"CNC"],["L130X130X10-ASTM A36M",19.8,"CNC"],["L130X130X10-E250A",19.72,"CNC"],["L130X130X10H-ASTM A572M GR50",19.8,"CNC"],["L130X130X10H-BSEN S355JO",19.8,"CNC"],["L130X130X10H-BSEN S355JR",19.8,"CNC"],["L130X130X10H-E350A",19.72,"CNC"],["L130X130X10H-E350C",19.7,"CNC"],["L130X130X10SH-ASTM A572M GR60",19.8,"CNC"],["L130X130X11-E250A",21.7,"CNC"],["L130X130X11H-BSEN S355JO",21.7,"CNC"],["L130X130X11H-E350A",21.7,"CNC"],["L130X130X12-ASTM A36M",23.6,"CNC"],["L130X130X12-BSEN S275JR",23.6,"CNC"],["L130X130X12-E250C",23.5,"CNC"],["L130X130X12H-ASTM A572M GR50",23.6,"CNC"],["L130X130X12H-BSEN S355JO",23.6,"CNC"],["L130X130X12H-BSEN S355JR",23.6,"CNC"],["L130X130X12H-E350A",23.45,"CNC"],["L130X130X12H-E350C",23.5,"CNC"],["L130X130X12SH-ASTM A572M GR60",23.6,"CNC"],["L130X130X14H-BSEN S355JO",27.2,"CNC"],["L130X130X15-ASTM A36M",29.0,"CNC"],["L130X130X8-E250A",15.92,"CNC"],["L130X130X8H-BSEN S355JO",16.0,"CNC"],["L130X130X8H-E350A",15.92,"CNC"],["L130X130X9-E250A",17.82,"CNC"],["L130X130X9H-BSEN S355JO",17.9,"CNC"],["L130X130X9H-E350A",17.82,"CNC"],["L130X130X9SH-ASTM A572M GR60",17.9,"CNC"],["L150X150X10-BSEN S275JO",23.0,"CNC"],["L150X150X10-BSEN-S275JR",23.0,"CNC"],["L150X150X10-E250A",22.93,"CNC"],["L150X150X10H-BSEN S355JO",23.0,"CNC"],["L150X150X10H-E350A",22.93,"CNC"],["L150X150X10H-E350C",22.9,"CNC"],["L150X150X11H-BSEN S355JO",25.2,"CNC"],["L150X150X11H-E350A",25.2,"CNC"],["L150X150X12 E250A",27.29,"CNC"],["L150X150X12-ASTM A36M",27.3,"CNC"],["L150X150X12-BSEN S275JR",27.3,"CNC"],["L150X150X12H E350A",27.29,"CNC"],["L150X150X12H-BSEN S355JO",27.3,"CNC"],["L150X150X12H-BSEN S355JR",27.3,"CNC"],["L150X150X12H-E350C",27.3,"CNC"],["L150X150X12SH-ASTM A572M GR60",27.3,"CNC"],["L150X150X13H-BSEN S355JO",29.5,"CNC"],["L150X150X13H-E350A",29.5,"CNC"],["L150X150X13SH-ASTM A572M GR60",29.5,"CNC"],["L150X150X14-ASTM A36M",31.6,"CNC"],["L150X150X14H-BSEN S355JR",31.6,"CNC"],["L150X150X14H-BSEN-S355JO",31.6,"CNC"],["L150X150X14H-E350A",31.6,"CNC"],["L150X150X15-BSEN-S275JR",33.8,"CNC"],["L150X150X15H BSEN S355JO",33.8,"CNC"],["L150X150X15H-ASTM A572M GR50",33.8,"CNC"],["L150X150X15H-E350A",33.72,"CNC"],["L150X150X15H-E350C",33.8,"CNC"],["L150X150X15SH-ASTM A572M GR60",33.8,"CNC"],["L150X150X16-ASTM A36M",35.9,"CNC"],["L150X150X16-E250A",35.84,"CNC"],["L150X150X16-E250C",35.8,"CNC"],["L150X150X16H-BSEN S355JO",35.9,"CNC"],["L150X150X16H-BSEN S355JR",35.9,"CNC"],["L150X150X16H-E350A",35.84,"CNC"],["L150X150X16H-E350C",35.8,"CNC"],["L150X150X18-ASTM A36M",40.1,"DRILLING"],["L150X150X18-BSEN S275JO",40.1,"DRILLING"],["L150X150X18H BSEN S355JO",40.1,"DRILLING"],["L150X150X18H- BSEN S355JR",40.1,"DRILLING"],["L150X150X18H-ASTM A572M GR50",40.1,"DRILLING"],["L150X150X18H-E350A",40.01,"DRILLING"],["L150X150X19H-E350A",42.1,"DRILLING"],["L150X150X20H BSEN S355JO",44.2,"DRILLING"],["L150X150X20H-E350A",44.12,"DRILLING"],["L150X150X20H-E350C",44.1,"DRILLING"],["L160X160X12H-E350A",29.3,"CNC"],["L160X160X13H-E350A",31.6,"CNC"],["L160X160X14H BSEN S355JO",33.9,"CNC"],["L160X160X14H-E350A",33.9,"CNC"],["L160X160X15H-E350A",36.2,"CNC"],["L160X160X16H-E350A",38.4,"CNC"],["L175X175X12SH-ASTM A572M GR60",31.8,"DRILLING"],["L175X175X15SH-ASTM A572M GR60",39.4,"DRILLING"],["L180x180x13H-BSEN S355JO",35.7,"DRILLING"],["L180X180X13H-E350A",35.7,"DRILLING"],["L180X180X14H- BSEN S355JR",38.3,"DRILLING"],["L180X180X14H-BSEN S355JO",38.3,"DRILLING"],["L180X180X14H-E350A",38.3,"DRILLING"],["L180X180X15H-E350A",41.09,"DRILLING"],["L180X180X16H-E350A",43.5,"DRILLING"],["L180X180X17H-E350A",46.0,"DRILLING"],["L180X180X18H-ASTM A572M GR50",48.6,"DRILLING"],["L180X180X18H-E350A",48.6,"DRILLING"],["L180X180X20H-ASTM A572M GR50",53.7,"DRILLING"],["L180X180X20H-E350A",53.7,"DRILLING"],["L200X200X12H-BSEN-S355JO",36.6,"DRILLING"],["L200X200X12H-E350A",36.85,"DRILLING"],["L200X200X13H-BSEN S355JO",39.8,"DRILLING"],["L200X200X14H-BSEN S355JO",42.7,"DRILLING"],["L200X200X14H-E350A",42.7,"DRILLING"],["L200X200X15H BSEN S355JO",45.6,"DRILLING"],["L200X200X15H-ASTM A572M GR50",45.6,"DRILLING"],["L200X200X15H-E350A",45.6,"DRILLING"],["L200X200X15SH-ASTM A572M GR60",45.6,"DRILLING"],["L200X200X16-E250A",48.53,"DRILLING"],["L200X200X16H BSEN S355JO",48.5,"DRILLING"],["L200X200X16H-E350A",48.53,"DRILLING"],["L200X200X16H-E350C",48.5,"DRILLING"],["L200X200X18H BSEN S355JO",54.3,"DRILLING"],["L200X200X18H- BSEN S355JR",54.3,"DRILLING"],["L200X200X18H-E350A",54.3,"DRILLING"],["L200X200X20H BSEN S355JO",59.9,"DRILLING"],["L200X200X20H-ASTM A572M GR50",59.9,"DRILLING"],["L200X200X20H-E350A",59.96,"DRILLING"],["L200X200X20SH-ASTM A572M GR60",59.9,"DRILLING"],["L200X200X21H-E350A",62.8,"DRILLING"],["L200X200X22H-ASTM A572M GR50",65.6,"DRILLING"],["L200X200X22H-BSEN S355JO",65.6,"DRILLING"],["L200X200X22H-E350A",65.6,"DRILLING"],["L200X200X23H-E350A",68.3,"DRILLING"],["L200X200X24H-BSEN S355JO",71.1,"DRILLING"],["L200X200X24H-E350A",71.31,"DRILLING"],["L200X200X25H BSEN S355JO",73.9,"DRILLING"],["L200X200X25H-ASTM A572M GR50",73.9,"DRILLING"],["L200X200X25H-E350A",73.9,"DRILLING"],["L200X200X25H-E350C",73.9,"DRILLING"],["L200X200X25SH-ASTM A572M GR60",73.9,"DRILLING"],["L200x200x28H-E350A",82.0,"DRILLING"],["L250x250x21H-E350A",76.6,"DRILLING"],["L250X250X23H-E350A",86.1,"DRILLING"],["L250X250X24H-E350A",89.7,"DRILLING"],["L250X250X25H-BSEN S355JO",93.2,"DRILLING"],["L250X250X25H-E350A",93.2,"DRILLING"],["L250X250X25SH-ASTM A572M GR60",93.2,"DRILLING"],["L250X250X28H-ASTM A572M GR50",104.0,"DRILLING"],["L250X250X28H-E350A",104.0,"DRILLING"],["L250X250X30H-E350A",111.0,"DRILLING"],["L250X250X31H-E350A",114.0,"DRILLING"],["L250X250X35H-ASTM A572M GR50",128.0,"DRILLING"],["L250X250X35H-BSEN S355JO",128.0,"DRILLING"],["L250X250X35H-E350A",128.0,"DRILLING"],["L250X250X35SH-ASTM A572M GR60",128.0,"DRILLING"],["L40X40X5-BSEN S275JR",2.97,"AMC"],["L45X30X4-BSEN S275JR",2.25,"AMC"],["L45X30X4-E250A",2.27,"AMC"],["L45X30X4H-E350A",2.27,"AMC"],["L45X30X5-BSEN S275JO",2.8,"AMC"],["L45X30X5-E250A",2.79,"AMC"],["L45X45X4-ASTM A36M",2.74,"AMC"],["L45X45X4-BSEN S275JR",2.74,"AMC"],["L45X45X4-E250A",2.75,"AMC"],["L45X45X4-E250C",2.7,"AMC"],["L45X45X4H-BSEN S355JR",2.74,"AMC"],["L45X45X4H-BSEN-S355JO",2.74,"AMC"],["L45X45X4H-E350A",2.75,"AMC"],["L45X45X4SH-ASTM A572M GR60",2.74,"AMC"],["L45X45X5-ASTM A36M",3.38,"AMC"],["L45X45X5-BSEN S275JO",3.38,"AMC"],["L45X45X5-BSEN S275JR",3.38,"AMC"],["L45X45X5-E250A",3.39,"AMC"],["L45X45X5H-BSEN S355JO",3.38,"AMC"],["L45X45X5H-E350A",3.39,"AMC"],["L45X45X5SH-ASTM A572M GR60",3.4,"AMC"],["L50X50X4-BSEN S275JR",3.06,"AMC"],["L50X50X4-E250A",3.08,"AMC"],["L50X50X4-E250C",3.0,"AMC"],["L50X50X4H-BSEN S355JR",3.06,"AMC"],["L50X50X4H-BSEN-S355JO",3.06,"AMC"],["L50X50X4H-E350A",3.08,"AMC"],["L50X50X5-ASTM A36M",3.77,"AMC"],["L50X50X5-BSEN S275JO",3.77,"AMC"],["L50X50X5-BSEN S275JR",3.77,"AMC"],["L50X50X5-E250A",3.79,"AMC"],["L50X50X5-E250C",3.8,"AMC"],["L50X50X5H-BSEN-S355JO",3.77,"AMC"],["L50X50X5H-E350A",3.79,"AMC"],["L50X50X5SH-ASTM A572M GR60",3.77,"AMC"],["L50X50X6-ASTM A36M",4.47,"AMC"],["L50X50X6H-BSEN S355JR",4.47,"AMC"],["L50X50X6H-BSEN-S355JO",4.47,"AMC"],["L50X50X6H-E350A",4.49,"AMC"],["L50X50X6SH-ASTM A572M GR60",4.47,"AMC"],["L55X55X4-BSEN S275JR",3.38,"AMC"],["L55X55X4-E250A",3.4,"AMC"],["L55X55X4-E250C",3.3,"AMC"],["L55X55X4H-BSEN S355JR",3.38,"AMC"],["L55X55X4H-BSEN-S355JO",3.38,"AMC"],["L55X55X4H-E350A",3.4,"AMC"],["L55X55X5-ASTM A36M",4.18,"AMC"],["L55X55X5-BSEN S275JO",4.18,"AMC"],["L55X55X5-BSEN S275JR",4.18,"AMC"],["L55X55X5-E250A",4.19,"AMC"],["L55X55X5-E250C",4.1,"AMC"],["L55X55X5H-BSEN S355JR",4.18,"AMC"],["L55X55X5H-BSEN-S355JO",4.18,"AMC"],["L55X55X5H-E350A",4.19,"AMC"],["L55X55X6 BSEN S275JR",4.95,"AMC"],["L55X55X6-BSEN S275JO",4.95,"AMC"],["L55X55X6H-BSEN S355JR",4.95,"AMC"],["L55X55X6H-BSEN-S355JO",4.95,"AMC"],["L55X55X6H-E350A",4.97,"AMC"],["L60X60X4-BSEN S275JR",3.7,"AMC"],["L60X60X4-E250A",3.71,"AMC"],["L60X60X4-E250C",3.7,"AMC"],["L60X60X4H-BSEN S355JR",3.7,"AMC"],["L60X60X4H-BSEN-S355J0",3.7,"AMC"],["L60X60X4H-E350A",3.71,"AMC"],["L60X60X5-ASTM A36M",4.57,"AMC"],["L60X60X5-BSEN S275JO",4.57,"AMC"],["L60X60X5-BSEN S275JR",4.57,"AMC"],["L60X60X5-E250A",4.58,"AMC"],["L60X60X5-E250C",4.5,"AMC"],["L60X60X5H BSEN S355JR",4.57,"AMC"],["L60X60X5H-BSEN-S355JO",4.57,"AMC"],["L60X60X5H-E350A",4.58,"AMC"],["L60X60X5SH-ASTM A572M GR60",4.57,"AMC"],["L60X60X6-ASTM A36M",5.42,"AMC"],["L60X60X6-BSEN S275JR",5.42,"AMC"],["L60X60X6H-BSEN S355JR",5.42,"AMC"],["L60X60X6H-BSEN-S355JO",5.42,"AMC"],["L60X60X6H-E350A",5.44,"AMC"],["L60X60X8H-BSEN-S355JO",7.09,"CNC-2"],["L65X65X4-BSEN S275JR",4.02,"AMC"],["L65X65X4-E250A",4.03,"AMC"],["L65X65X4-E250C",4.0,"AMC"],["L65X65X4H-BSEN S355JR",4.02,"AMC"],["L65X65X4H-BSEN-S355JO",4.02,"AMC"],["L65X65X4H-E350A",4.03,"AMC"],["L65X65X5-ASTM A36M",4.97,"AMC"],["L65X65X5-BSEN S275JO",4.97,"AMC"],["L65X65X5-BSEN-S275JR",4.97,"AMC"],["L65X65X5-E250A",4.98,"AMC"],["L65X65X5-E250C",4.9,"AMC"],["L65X65X5H BSEN S355JR",4.97,"AMC"],["L65X65X5H-BSEN-S355JO",4.97,"AMC"],["L65X65X5H-E350A",4.98,"AMC"],["L65X65X5SH-ASTM A572M GR60",4.97,"AMC"],["L65X65X6 BSEN S275JO",5.91,"AMC"],["L65X65X6-ASTM A36M",5.91,"AMC"],["L65X65X6-BSEN S275JR",5.91,"AMC"],["L65X65X6-E250A",5.91,"AMC"],["L65X65X6H-BSEN S355JO",5.91,"AMC"],["L65X65X6H-BSEN S355JR",5.91,"AMC"],["L65X65X6H-E350A",5.91,"AMC"],["L65X65X6SH-ASTM A572M GR60",5.8,"AMC"],["L70X70X5-ASTM A36M",5.37,"AMC-2"],["L70X70X5-BSEN S275JO",5.37,"AMC-2"],["L70X70X5-BSEN S275JR",5.37,"AMC-2"],["L70X70X5-E250A",5.38,"AMC-2"],["L70X70X5-E250C",5.3,"AMC-2"],["L70X70X5H-BSEN S355JO",5.37,"AMC-2"],["L70X70X5H-BSEN S355JR",5.37,"AMC-2"],["L70X70X5H-E350A",5.38,"AMC-2"],["L70X70X5H-E350C",5.3,"AMC-2"],["L70X70X5SH-ASTM A572M GR60",5.37,"AMC-2"],["L70X70X6 BSEN S275JO",6.38,"AMC-2"],["L70X70X6-ASTM A36M",6.38,"AMC-2"],["L70X70X6-BSEN S275JR",6.38,"AMC-2"],["L70X70X6-E250A",6.39,"AMC-2"],["L70X70X6H-BSEN-S355JO",6.38,"AMC-2"],["L70X70X6H-BSEN-S355JR",6.38,"AMC-2"],["L70X70X6H-E350A",6.39,"AMC-2"],["L70X70X6SH-ASTM A572M GR60",6.38,"AMC-2"],["L70X70X7H-BSEN S355JO",7.38,"CNC-2"],["L70X70X9H-BSEN S355JO",9.32,"CNC-2"],["L75X75X4-E250A",4.65,"AMC-2"],["L75X75X4H-E350A",4.65,"AMC-2"],["L75X75X5-ASTM A36M",5.76,"AMC-2"],["L75X75X5-BSEN S275JO",5.76,"AMC-2"],["L75X75X5-BSEN S275JR",5.76,"AMC-2"],["L75X75X5-E250A",5.77,"AMC-2"],["L75X75X5-E250C",5.7,"AMC-2"],["L75X75X5H-BSEN S355JO",5.76,"AMC-2"],["L75X75X5H-BSEN S355JR",5.76,"AMC-2"],["L75X75X5H-E350A",5.77,"AMC-2"],["L75X75X5SH-ASTM A572M GR60",5.76,"AMC-2"],["L75X75X6-ASTM A36M",6.85,"CNC-2"],["L75X75X6-BSEN S275JO",6.85,"CNC-2"],["L75x75x6-BSEN S275JR",6.85,"CNC-2"],["L75X75X6-E250A",6.86,"CNC-2"],["L75X75X6-E250C",6.8,"CNC-2"],["L75X75X6H BSEN S355JR",6.85,"CNC-2"],["L75X75X6H-BSEN S355JO",6.85,"CNC-2"],["L75X75X6H-E350A",6.86,"CNC-2"],["L75X75X6SH-ASTM A572M GR60",6.85,"CNC-2"],["L80X80X10H-BSEN S355JO",11.9,"CNC-2"],["L80X80X5 BSEN S275JR",6.17,"CNC-2"],["L80X80X5-BSEN S275JO",6.17,"CNC-2"],["L80X80X5-E250A",6.17,"CNC-2"],["L80X80X5H-BSEN S355JR",6.17,"CNC-2"],["L80X80X5H-BSEN-S355JO",6.17,"CNC-2"],["L80X80X5H-E350A",6.17,"CNC-2"],["L80X80X6-ASTM A36M",7.34,"CNC-2"],["L80X80X6-BSEN S275JO",7.34,"CNC-2"],["L80X80X6-BSEN S275JR",7.34,"CNC-2"],["L80X80X6-E250A",7.36,"CNC-2"],["L80X80X6-E250C",7.3,"CNC-2"],["L80X80X6H BSEN-S355JR",7.34,"CNC-2"],["L80X80X6H-BSEN-S355JO",7.34,"CNC-2"],["L80X80X6H-E350A",7.36,"CNC-2"],["L80X80X6SH-ASTM A572M GR60",7.34,"CNC-2"],["L80X80X7-ASTM A36M",8.49,"CNC-2"],["L90X90X10H BSEN S355JO",13.4,"CNC-2"],["L90X90X5 BSEN S275JR",6.97,"CNC-2"],["L90X90X5-E250A",6.97,"CNC-2"],["L90X90X5H BSEN S355JR",6.97,"CNC-2"],["L90X90X5H-BSEN S355JO",6.97,"CNC-2"],["L90X90X5H-E350A",6.97,"CNC-2"],["L90X90X6-ASTM A36M",8.3,"CNC-2"],["L90X90X6-BSEN S275JO",8.3,"CNC-2"],["L90X90X6-BSEN S275JR",8.3,"CNC-2"],["L90X90X6-E250A",8.32,"CNC-2"],["L90X90X6-E250C",8.2,"CNC-2"],["L90X90X6H BSEN S355JR",8.3,"CNC-2"],["L90X90X6H-BSEN S355JO",8.3,"CNC-2"],["L90X90X6H-E350A",8.32,"CNC-2"],["L90X90X6H-E350C",8.2,"CNC-2"],["L90X90X6SH-ASTM A572M GR60",8.3,"CNC-2"],["L90X90X7 E250A",9.6,"CNC-2"],["L90X90X7-ASTM A36M",9.61,"CNC-2"],["L90X90X7-BSEN S275JO",9.61,"CNC-2"],["L90X90X7-BSEN S275JR",9.61,"CNC-2"],["L90X90X7-E250C",9.61,"CNC-2"],["L90X90X7H-BSEN S355JO",9.61,"CNC-2"],["L90X90X7H-E350A",9.6,"CNC-2"],["L90X90X7H-E350A",9.61,"CNC-2"],["L90X90X7H-E350C",9.6,"CNC-2"],["L90X90X7SH-ASTM A572M GR60",9.61,"CNC-2"],["L90X90X8-ASTM A36M",10.9,"CNC-2"],["L90X90X8-BSEN S275JR",10.9,"CNC-2"],["L90X90X8H-BSEN S355JO",10.9,"CNC-2"],["L90X90X8H-E350A",10.92,"CNC-2"],["L90X90X9H BSEN S355JO",12.2,"CNC-2"],["MC200X75-BSEN 275JO",22.3,"DRILLING"],["L120X120X8-ASTM A36M",14.7,"CNC"],["L130X130X8-ASTM A36M",16.0,"CNC"],["L130X130X8SH-ASTM A572M GR60",16.0,"CNC"],["L130X130X9-ASTM A36M",17.9,"CNC"],["L150X150X10SH-ASTM A572M GR60",23.0,"CNC"],["L150X150X11SH-ASTM A572M GR60",25.2,"CNC"],["L150X150X18SH-ASTM A572M GR60",40.1,"DRILLING"],["L150X150X20SH-ASTM A572M GR60",44.2,"DRILLING"],["L200X200X16SH-ASTM A572M GR60",48.5,"DRILLING"],["L65X65X8-ASTM A36M",7.73,"CNC-2"],["L65X65X8SH-ASTM A572M GR60",7.73,"CNC-2"],["L70X70X8-ASTM A36M",8.37,"CNC-2"],["L75X75X8-ASTM A36M",8.99,"CNC-2"],["L75X75X8SHASTM A572M GR60",8.99,"CNC-2"],["FLAT 45X5-ASTM A36M",1.8,"AMC"],["FLAT 60X6-ASTM A36M",2.8,"AMC"],["L200X200X17H-E350A",51.4,"DRILLING"],["L200X200X19H-E350A",54.3,"DRILLING"],["L120X120X12H-E350A",21.57,"CNC"],["L110X110X7SH-ASTM A572M GR60",11.8,"CNC"],["L130X130X8H-BSEN S355JR",16.0,"CNC"],["L130X130X9H-BSEN S355JR",17.9,"CNC"],["L180X180X14SH-ASTM A572M GR60",38.3,"DRILLING"],["L180X180X15SH-ASTM A572M GR60",40.9,"DRILLING"],["L90X90X7H BSEN S355JR",9.61,"CNC-2"],["L80X80X5SH-ASTM A572M GR60",6.17,"AMC-2"],["L150X150X10H-BSEN S355JR",23.0,"CNC"],["L150X150X14SH-ASTM A572M GR60",31.6,"CNC"],["L200X200X12H-BSEN S355JR",36.9,"DRILLING"],["L160X160X16H BSEN S355JO",38.4,"CNC"],["L160X160X19H BSEN S355JO",45.1,"DRILLING"],["L200X200X28H-BSEN S355JO",82.0,"DRILLING"],["L75x75x8-BSEN S275JR",8.99,"CNC-2"],["L80X80X8H-BSEN-S355JO",9.63,"CNC-2"],["L90X90X12H BSEN S355JO",15.8,"CNC"],["L250X250X18H-E350A",68.1,"DRILLING"],["L250X250X17H-E350A",64.4,"DRILLING"],["L100X100X10H-BSEN S355JR",15.0,"CNC"],["L100X100X10SH-ASTM A572M GR60",15.0,"CNC"],["L130X130X11SH-ASTM A572M GR60",21.7,"CNC"],["L150X150X11H-BSEN S355JR",25.2,"CNC"],["L180X180X13H- BSEN S355JR",35.7,"DRILLING"],["L90X90X5SH-ASTM A572M GR60",6.97,"CNC-2"],["L90X90X8SH-ASTM A572M GR60",10.9,"CNC-2"],["L100X100X8-E250C",12.1,"CNC-2"],["L110X110X10-E250C",16.6,"CNC"],["L120X120X10-E250C",18.2,"CNC"],["L120X120X8-E250C",14.7,"CNC"],["L130X130X10-E250C",19.7,"CNC"],["L150X150X10-E250C",22.9,"CNC"],["L150X150X12-E250C",27.3,"CNC"],["L150X150X15-E250C",33.8,"CNC"],["L150X150X18-E250C",40.1,"DRILLING"],["L200X200X16-E250C",48.5,"DRILLING"],["L70X70X6-E250C",6.39,"AMC"],["L130X130X12-E250A",23.45,"CNC"],["L90X90X8-E250A",10.92,"CNC-2"],["L200X200X20-ASTM A36M",59.9,"DRILLING"],["L130X130X11H BSEN S355JR",21.7,"CNC"],["L110X110X6SH-ASTM A572M GR60",10.2,"CNC-2"],["L120X120X8-BSEN S275JO",14.7,"CNC"],["L120X120X9-ASTM A36M",16.5,"CNC"],["L130x130X10 BSEN S275JO",19.8,"CNC"],["L150X150X16SH-ASTM A572M GR60",35.9,"CNC"],["L250X250X32H E350A",118.0,"DRILLING"],["L80X80X8ASTM A36M",9.63,"CNC-2"],["L180X180X14SH-ASTM A572M GR60",38.3,"DRILLING"],["L55X55X5H-BSEN S355JR",4.18,"AMC"],["L250X250X22H E350A",82.5,"DRILLING"],["L150X150X17H-E350A",38.0,"CNC"],["L250X250X26H-E350A",96.7,"DRILLING"],["L180X180X16SH-ASTM A572M GR60",43.5,"DRILLING"],["L120X120X11H-E350A",19.9,"CNC"],["L100X100X9H-E350A",13.6,"CNC"],["L60X60X6-E250A",5.4,"AMC"],["L130X130X14H-E350A",27.2,"CNC"],["L150X150X12H-E350A",27.29,"CNC"],["L250X250X19H-E350A",71.7,"DRILLING"],["L150X150X14-E250A",31.6,"CNC"],["L70X70X4-E250A",4.35,"AMC-2"]];
+
+function findSection(code){
+  if (!code) return null;
+  // exact
+  let s = SECTION_MASTER.find(x => x[0] === code);
+  if (s) return s;
+  // fuzzy
+  const norm = v => (v||'').toUpperCase().replace(/[\s\-_]/g,'').replace(/(BSEN|ASTM|S275JR|E\d+\w?|HT|MS)/g,'');
+  const tgt = norm(code);
+  return SECTION_MASTER.find(x => norm(x[0]) === tgt) || null;
+}
+
+function pincherFor(machine){
+  const m = (machine || '').toUpperCase();
+  if (m.startsWith('CNC'))   return 80;
+  if (m.startsWith('AMC'))   return 25;
+  if (m.startsWith('DRILL')) return 25;
+  if (m === 'SP' || m === 'DP') return 25;
+  return 25;
+}
+
+// State
+const ROWS = 25;
+let state = {
+  scenarios: [],         // 5 ranked solutions
+  activeScenario: 0,
+  lastInput: null,
+  comparisons: 0,
+};
+
+/* ═══ INIT ════════════════════════════════════════════════════ */
+function init(){
+  const dl = document.getElementById('sectionList');
+  SECTION_MASTER.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s[0];
+    o.label = `${s[1]} kg/m · ${s[2]}`;
+    dl.appendChild(o);
+  });
+  for (let i = 0; i < ROWS; i++){ addStockRow(); addDemandRow(); }
+  document.getElementById('runDate').valueAsDate = new Date();
+  setupDropZone();
+  setupPaste('stockBody');
+  setupPaste('demandBody');
+  updateClock();
+  setInterval(updateClock, 30000);
+}
+
+function updateClock(){
+  document.getElementById('hdrTime').textContent =
+    new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+}
+
+/* ═══ ROWS ════════════════════════════════════════════════════ */
+function addStockRow(){
+  const tb = document.getElementById('stockBody');
+  const idx = tb.children.length;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${idx+1}</td>
+    <td><input type="number" placeholder="12000" oninput="onStockChange()" onkeydown="navTbl(event)"></td>
+    <td><input type="number" placeholder="50" oninput="onStockChange()" onkeydown="navTbl(event)"></td>
+    <td style="text-align:center"><button class="btn btn-sm btn-ghost" style="color:var(--red);padding:3px 7px" onclick="this.closest('tr').remove();renumber('stockBody');onStockChange()">✕</button></td>`;
+  tb.appendChild(tr);
+}
+function addDemandRow(){
+  const tb = document.getElementById('demandBody');
+  const idx = tb.children.length;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${idx+1}</td>
+    <td><input class="text" placeholder="MK-001" oninput="onDemandChange()" onkeydown="navTbl(event)"></td>
+    <td><input type="number" placeholder="8133" oninput="onDemandChange()" onkeydown="navTbl(event)"></td>
+    <td><input type="number" placeholder="100" oninput="onDemandChange()" onkeydown="navTbl(event)"></td>
+    <td style="text-align:center"><button class="btn btn-sm btn-ghost" style="color:var(--red);padding:3px 7px" onclick="this.closest('tr').remove();renumber('demandBody');onDemandChange()">✕</button></td>`;
+  tb.appendChild(tr);
+}
+function renumber(id){
+  [...document.getElementById(id).children].forEach((tr,i) => tr.children[0].textContent = i+1);
+}
+function clearStock(){
+  if (!confirm('Clear all stock entries?')) return;
+  document.getElementById('stockBody').innerHTML = '';
+  for (let i = 0; i < ROWS; i++) addStockRow();
+  onStockChange();
+}
+function clearDemand(){
+  if (!confirm('Clear all demand entries?')) return;
+  document.getElementById('demandBody').innerHTML = '';
+  for (let i = 0; i < ROWS; i++) addDemandRow();
+  onDemandChange();
+}
+function navTbl(e){
+  if (e.key === 'Enter'){
+    e.preventDefault();
+    const inp = e.target;
+    const td = inp.closest('td');
+    const tr = td.parentNode;
+    const colIdx = [...tr.children].indexOf(td);
+    const next = tr.nextElementSibling?.children[colIdx]?.querySelector('input');
+    if (next){ next.focus(); next.select(); }
+  }
+}
+
+function setupPaste(tableId){
+  document.getElementById(tableId).addEventListener('paste', e => {
+    const txt = e.clipboardData.getData('text');
+    if (!txt.includes('\t') && !txt.includes('\n')) return;
+    e.preventDefault();
+    const rows = txt.trim().split(/\r?\n/).map(r => r.split('\t'));
+    if (!e.target.matches('input')) return;
+    const startTd = e.target.closest('td');
+    const startTr = startTd.parentNode;
+    const startCol = [...startTr.children].indexOf(startTd);
+    const tbody = startTr.parentNode;
+    const allTrs = [...tbody.children];
+    const startRow = allTrs.indexOf(startTr);
+    rows.forEach((rowVals, ri) => {
+      let tr = allTrs[startRow + ri];
+      if (!tr){
+        if (tableId === 'stockBody') addStockRow(); else addDemandRow();
+        tr = tbody.lastChild;
+      }
+      rowVals.forEach((v, ci) => {
+        const inp = tr.children[startCol + ci]?.querySelector('input');
+        if (inp) inp.value = v.trim();
+      });
+    });
+    if (tableId === 'stockBody') onStockChange(); else onDemandChange();
+  });
+}
+
+function readStock(){
+  const out = [];
+  [...document.getElementById('stockBody').children].forEach(tr => {
+    const inps = tr.querySelectorAll('input');
+    const len = parseInt(inps[0].value);
+    const qty = parseInt(inps[1].value);
+    if (len > 0 && qty > 0) out.push({len, qty});
+  });
+  return out;
+}
+function readDemand(){
+  const out = [];
+  [...document.getElementById('demandBody').children].forEach(tr => {
+    const inps = tr.querySelectorAll('input');
+    const len = parseInt(inps[1].value);
+    const qty = parseInt(inps[2].value);
+    if (len > 0 && qty > 0) out.push({mark: inps[0].value.trim() || '', len, qty});
+  });
+  return out;
+}
+function onStockChange(){
+  const s = readStock();
+  const bars = s.reduce((a,b)=>a+b.qty,0);
+  const mm = s.reduce((a,b)=>a+b.len*b.qty,0);
+  document.getElementById('stockSum').textContent = `${s.length} lengths · ${bars} bars`;
+  document.getElementById('stockTotal').textContent = `${bars} bars · ${(mm/1000).toFixed(1)} m`;
+}
+function onDemandChange(){
+  const d = readDemand();
+  const pcs = d.reduce((a,b)=>a+b.qty,0);
+  const mm = d.reduce((a,b)=>a+b.len*b.qty,0);
+  document.getElementById('demandSum').textContent = `${d.length} jobs · ${pcs} pcs`;
+  document.getElementById('demandTotal').textContent = `${pcs} pcs · ${(mm/1000).toFixed(1)} m`;
+}
+
+function onSectionChange(){
+  const code = document.getElementById('sectionCode').value;
+  const info = document.getElementById('sectionInfo');
+  // Exact match
+  let sec = SECTION_MASTER.find(s => s[0] === code);
+  // Fuzzy match: strip suffixes like -ASTM, -BSEN, MS/HT, spaces, hyphens
+  if (!sec && code){
+    const norm = s => (s || '').toUpperCase().replace(/[\s\-_]/g,'').replace(/(BSEN|ASTM|S275JR|E\d+\w?|HT|MS)/g,'');
+    const target = norm(code);
+    sec = SECTION_MASTER.find(s => norm(s[0]) === target);
+  }
+  if (sec){
+    const pin = pincherFor(sec[2]);
+    document.getElementById('pincher').value = pin;
+    info.textContent = `✓ ${sec[1]} kg/m · ${sec[2]} · pincher ${pin} mm`;
+    info.className = 'hint ok';
+    return;
+  }
+  if (code) {
+    // Heuristic: infer shape & machine from prefix
+    const upper = code.toUpperCase();
+    let inferred = null;
+    if (/^L\s*\d/.test(upper)){
+      // Angle section — AMC machine, pincher 25
+      inferred = {shape:'angle', machine:'AMC', pincher:25};
+    } else if (/^C\s*\d|^CH\s*\d/.test(upper)){
+      inferred = {shape:'channel', machine:'CNC', pincher:80};
+    } else if (/^PL|^P\s*\d|PLATE/.test(upper)){
+      inferred = {shape:'plate', machine:'CNC', pincher:80};
+    }
+    if (inferred){
+      document.getElementById('pincher').value = inferred.pincher;
+      info.textContent = `⚠ Section not in master — inferred ${inferred.shape}/${inferred.machine}, pincher set to ${inferred.pincher} mm`;
+      info.className = 'hint warn';
+    } else {
+      info.textContent = '⚠ Section not in master — using current pincher';
+      info.className = 'hint warn';
+    }
+  } else {
+    info.textContent = 'Auto-fills unit weight & pincher';
+    info.className = 'hint';
+  }
+}
+
+function showTab(name, btn){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add('active');
+  document.getElementById('tab-input').classList.toggle('hidden', name !== 'input');
+  document.getElementById('tab-result').classList.toggle('hidden', name !== 'result');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function setStatus(msg, type){
+  const el = document.getElementById('runStatus');
+  el.innerHTML = type ? `<span class="${type}">${msg}</span>` : msg;
+}
+
+/* ═══ OPTIMIZER ENGINE ═══════════════════════════════════════ */
+/**
+ * OPTIMUS pincher model: pincher (saw kerf) does NOT consume bar length.
+ * Pattern feasibility: sum(cuts) <= bar_length
+ * Pincher is tracked separately as scrap (Pincher Allowance).
+ *
+ * This matches the user's manual Excel cutting plans where 4 cuts
+ * summing to 11,937 mm fit in a 12,000 mm bar with end-bit 63 mm.
+ */
+function generatePatterns(stockLen, demandLengths, demandQty, endTrim, maxOpen){
+  const usable = stockLen - 2 * endTrim;
+  const lengths = [...demandLengths].filter(L => (demandQty[L] || 0) > 0).sort((a,b) => b - a);
+  if (lengths.length === 0) return [];
+  const patterns = [];
+
+  function recurse(remaining, current, idx){
+    if (current.length > maxOpen) return;
+    if (current.length > 0) patterns.push(current.slice());
+    if (patterns.length > 8000) return;
+    for (let i = idx; i < lengths.length; i++){
+      const L = lengths[i];
+      const dem = demandQty[L] || 0;
+      if (dem <= 0) continue;
+      const maxByDemand = Math.min(dem, Math.floor(remaining / L));
+      for (let q = 1; q <= maxByDemand; q++){
+        const used = q * L;
+        if (remaining - used < 0) break;
+        current.push([L, q]);
+        recurse(remaining - used, current, i + 1);
+        current.pop();
+      }
+    }
+  }
+  recurse(usable, [], 0);
+
+  patterns.forEach(p => {
+    let cuts = 0, n = 0;
+    p.forEach(([L,c]) => { cuts += L*c; n += c; });
+    p.cutMm = cuts;
+    p.cutN  = n;
+    p.waste = stockLen - cuts;
+  });
+  patterns.sort((a,b) => a.waste - b.waste || b.cutMm - a.cutMm);
+  return patterns.slice(0, 400);
+}
+
+/**
+ * Greedy allocator with multi-objective scoring.
+ * Different scoring functions produce different scenarios.
+ */
+function runScenario(stocks, demands, params, scoringFn, noiseFn){
+  noiseFn = noiseFn || (() => 0);
+  const stockByLen = {};
+  stocks.forEach(s => stockByLen[s.len] = (stockByLen[s.len]||0) + s.qty);
+  const demandByLen = {};
+  demands.forEach(d => demandByLen[d.len] = (demandByLen[d.len]||0) + d.qty);
+
+  const demandLengths = Object.keys(demandByLen).map(Number);
+  const maxStock = Math.max(...Object.keys(stockByLen).map(Number), params.mrpStdLen || 0);
+  const tooLong = demandLengths.filter(L => L > maxStock - 2*params.endTrim);
+  if (tooLong.length){
+    return {error: `Cut length ${tooLong[0]} mm cannot fit any stock.`};
+  }
+
+  // Add virtual MRP stock
+  const isVirtual = {};
+  if (params.mrpStdLen > 0){
+    const sl = params.mrpStdLen;
+    if (!stockByLen[sl]) stockByLen[sl] = 0;
+    stockByLen[sl] += 5000;
+    isVirtual[sl] = true;
+  }
+
+  const remStock = {...stockByLen};
+  const remDem   = {...demandByLen};
+  const result   = [];
+
+  function regenAll(){
+    const out = {};
+    Object.keys(remStock).forEach(SL => {
+      if (remStock[SL] > 0){
+        out[+SL] = generatePatterns(+SL, demandLengths, remDem, params.endTrim, params.maxOpen);
+      }
+    });
+    return out;
+  }
+  let patternsByStock = regenAll();
+  let iterSinceRegen = 0;
+  let safety = 0;
+
+  while (Object.values(remDem).some(q => q > 0)){
+    safety++; if (safety > 5000) break;
+    let best = null;
+
+    // Collect top candidates, then optionally inject noise
+    const candidates = [];
+    Object.keys(remStock).forEach(SLstr => {
+      const SL = +SLstr;
+      if (remStock[SL] <= 0) return;
+      const pats = patternsByStock[SL] || [];
+      for (let pi = 0; pi < Math.min(pats.length, 80); pi++){
+        const pat = pats[pi];
+        let maxBars = remStock[SL];
+        let useful = false;
+        for (const [L, c] of pat){
+          const have = remDem[L] || 0;
+          if (have <= 0){ maxBars = 0; break; }
+          maxBars = Math.min(maxBars, Math.floor(have / c));
+          useful = true;
+        }
+        if (maxBars <= 0 || !useful) continue;
+        const score = scoringFn(SL, pat, maxBars, params, isVirtual[SL]);
+        candidates.push({SL, pat, bars: maxBars, score});
+      }
+    });
+    candidates.sort((a,b) => a.score - b.score);
+    if (candidates.length){
+      const offset = Math.min(noiseFn(0), candidates.length-1);
+      best = candidates[offset];
+    }
+
+    if (!best){
+      if (iterSinceRegen > 0){ patternsByStock = regenAll(); iterSinceRegen = 0; continue; }
+      break;
+    }
+    result.push({
+      stockLen: best.SL,
+      bars: best.bars,
+      pattern: best.pat.slice(),
+      waste: best.pat.waste,
+      cutMm: best.pat.cutMm,
+      cutN:  best.pat.cutN,
+      isVirtual: !!isVirtual[best.SL],
+    });
+    remStock[best.SL] -= best.bars;
+    best.pat.forEach(([L,c]) => { remDem[L] -= best.bars * c; });
+    iterSinceRegen++;
+    if (iterSinceRegen > 3){ patternsByStock = regenAll(); iterSinceRegen = 0; }
+  }
+
+  // Compute KPIs
+  let raw=0, cut=0, kerf=0, scrap=0, offcut=0, phys=0, virt=0;
+  result.forEach(r => {
+    raw  += r.stockLen * r.bars;
+    cut  += r.cutMm    * r.bars;
+    kerf += r.cutN * params.pincher * r.bars;
+    if (params.minOffcut > 0 && r.waste >= params.minOffcut){
+      offcut += r.waste * r.bars;
+      r.offcut = true;
+    } else {
+      scrap  += Math.max(0, r.waste) * r.bars;
+      r.offcut = false;
+    }
+    if (r.isVirtual) virt += r.bars; else phys += r.bars;
+  });
+
+  // Shortfall
+  const shortfall = {};
+  let totalShort = 0;
+  Object.entries(remDem).forEach(([L, q]) => {
+    if (q > 0){ shortfall[L] = q; totalShort += q; }
+  });
+
+  const totalScrap = scrap + kerf;
+  const totalScrapPct = raw ? (totalScrap / raw * 100) : 0;
+
+  return {
+    result, shortfall, totalShort,
+    kpis: {
+      rawMm: raw, cutMm: cut, kerfMm: kerf, scrapMm: scrap, offcutMm: offcut,
+      utilStrict:    raw ? (cut / raw * 100) : 0,
+      utilWithOff:   raw ? ((cut + offcut) / raw * 100) : 0,
+      scrapPct:      raw ? (scrap / raw * 100) : 0,
+      kerfPct:       raw ? (kerf / raw * 100) : 0,
+      offcutPct:     raw ? (offcut / raw * 100) : 0,
+      totalScrapMm:  totalScrap,
+      totalScrapPct: totalScrapPct,
+      totalBars: phys + virt,
+      physBars:  phys,
+      virtualBars: virt,
+      patterns:  result.length,
+    }
+  };
+}
+
+/* ═══ MULTI-SCENARIO GENERATION ═══════════════════════════════ */
+const SCENARIOS = [
+  {
+    id: 'max_fulfillment',
+    name: 'Maximum Fulfillment',
+    desc: 'Maximise demand satisfaction · pack max cuts per bar',
+    // Force max-cut patterns by HEAVILY weighting cut count.
+    // This finds the manual planner's tight 4-cut packings.
+    score: (SL, p, bars, params, isV) => {
+      // Negative score = better. Each cut is worth -1,000,000 (always wins over any waste).
+      const cutCount = -p.cutN * 1000000;
+      const scrap = p.waste < params.minOffcut ? p.waste : 0;
+      const virt = isV ? SL : 0;
+      // Tiebreak: prefer low scrap, then low virtual
+      return cutCount + scrap * 5 + virt;
+    }
+  },
+  {
+    id: 'lowest_scrap',
+    name: 'Lowest Total Scrap',
+    desc: 'Minimise pincher + end-cut combined',
+    // Strong cut-count bias too, but balanced with waste minimization
+    score: (SL, p, bars, params, isV) => {
+      const cutCount = -p.cutN * 100000;
+      const scrap = p.waste < params.minOffcut ? p.waste : 0;
+      const kerf = p.cutN * params.pincher * 0.3;
+      const virt = isV ? SL * 0.5 : 0;
+      return cutCount + scrap * 10 + kerf + virt;
+    }
+  },
+  {
+    id: 'balanced',
+    name: 'Balanced Combination',
+    desc: 'Mix of low scrap, fulfillment, and bar efficiency',
+    score: (SL, p, bars, params, isV) => {
+      const cutCount = -p.cutN * 200000;
+      const scrap = p.waste < params.minOffcut ? p.waste : 0;
+      const wasteAny = p.waste;
+      const virt = isV ? SL * 0.4 : 0;
+      return cutCount + scrap * 6 + wasteAny * 0.3 + virt;
+    }
+  },
+  {
+    id: 'min_balance',
+    name: 'Minimum Balance Stock',
+    desc: 'Use shorter bars first · save long bars for next run',
+    score: (SL, p, bars, params, isV) => {
+      const cutCount = -p.cutN * 100000;
+      const stockPenalty = SL * 2;
+      const scrap = p.waste < params.minOffcut ? p.waste : 0;
+      const virt = isV ? SL * 2 : 0;
+      return cutCount + stockPenalty + scrap * 4 + virt;
+    }
+  },
+  {
+    id: 'max_offcut',
+    name: 'Maximum Offcut Reuse',
+    desc: 'Generate the largest reusable remnants',
+    score: (SL, p, bars, params, isV) => {
+      const cutCount = -p.cutN * 100000;
+      const isReusable = p.waste >= params.minOffcut;
+      const reusableBonus = isReusable ? -p.waste * 2 : 0;
+      const scrap = p.waste < params.minOffcut ? p.waste * 8 : 0;
+      const virt = isV ? SL * 0.6 : 0;
+      return cutCount + reusableBonus + scrap + virt;
+    }
+  },
+];
+
+function generateAllScenarios(stocks, demands, params){
+  const scenarios = [];
+  for (const sc of SCENARIOS){
+    const res = runScenario(stocks, demands, params, sc.score);
+    if (res.error){
+      scenarios.push({...sc, error: res.error});
+      continue;
+    }
+    scenarios.push({
+      ...sc,
+      result: res.result,
+      kpis: res.kpis,
+      shortfall: res.shortfall,
+      totalShort: res.totalShort,
+    });
+  }
+  return scenarios;
+}
+
+function pickRecommended(scenarios){
+  // Recommended = lowest total scrap with full demand satisfaction
+  const fullySatisfied = scenarios.filter(s => !s.error && s.totalShort === 0);
+  if (fullySatisfied.length === 0){
+    // pick the one with smallest total scrap
+    return scenarios.findIndex(s => !s.error);
+  }
+  let best = -1, bestScore = Infinity;
+  fullySatisfied.forEach(s => {
+    if (s.kpis.totalScrapPct < bestScore){
+      bestScore = s.kpis.totalScrapPct;
+      best = scenarios.indexOf(s);
+    }
+  });
+  return best;
+}
+
+/* ═══ ITERATED LOCAL SEARCH (ILS) ═══════════════════════════════
+   Runs greedy multiple times with randomized pattern selection,
+   keeps the best solution. For tight cases (OMAN-style) where
+   pure greedy leaves shortfall, ILS converges to MILP-quality.
+   Budget: 30-60 seconds per scenario (within OPTIMUS 2-3 min target).
+   ═══════════════════════════════════════════════════════════════ */
+function runScenarioILS(stocks, demands, params, scoringFn, iterations, onProgress){
+  // First: deterministic greedy (best baseline)
+  let best = runScenario(stocks, demands, params, scoringFn);
+  if (best.error) return best;
+  let bestScore = scoreSolution(best);
+
+  for (let i = 0; i < iterations; i++){
+    // Perturbed greedy: with probability ε, pick 2nd/3rd best pattern instead of #1
+    const epsilon = 0.15 + 0.20 * Math.random();    // 15-35% randomization per iter
+    const noise = (idx) => idx === 0 ? (Math.random() < epsilon ? 1 + Math.floor(Math.random()*3) : 0) : 0;
+    const candidate = runScenario(stocks, demands, params, scoringFn, noise);
+    if (candidate.error) continue;
+    const score = scoreSolution(candidate);
+    if (score < bestScore){
+      best = candidate;
+      bestScore = score;
+    }
+    if (onProgress && i % 5 === 0) onProgress(i+1, iterations, bestScore);
+  }
+  return best;
+}
+
+function scoreSolution(res){
+  // Lower = better. Shortfall dominates (×100k), then total scrap.
+  const k = res.kpis;
+  return res.totalShort * 100000 + (k.totalScrapMm || 0) + (k.virtualBars||0) * 5000;
+}
+
+/* ═══ END-CUT PERMISSION SYSTEM ════════════════════════════════ */
+function classifyEndCut(eb){
+  // T1 ≤200 = acceptable scrap (default OK, no approval needed)
+  // T2 201-350 = needs planner approval (wasteful)
+  // T3 351-500 = needs planner approval (very wasteful)
+  // T4 >500   = reusable offcut (always OK, recovered into inventory)
+  if (eb <= 200)  return {tier:1, label:'OK · ≤200',          cls:'b-good'};
+  if (eb <= 350)  return {tier:2, label:'TIER 2 · 201-350',   cls:'b-warn'};
+  if (eb <= 500)  return {tier:3, label:'TIER 3 · 351-500',   cls:'b-warn'};
+  return            {tier:4, label:'OFFCUT · >500 (reusable)', cls:'b-cyan'};
+}
+
+function violationsByTier(scenario, params){
+  // Count bars per tier across the scenario's patterns
+  const counts = {1:0, 2:0, 3:0, 4:0};
+  const samples = {2:[], 3:[], 4:[]};
+  scenario.result?.forEach(r => {
+    const t = classifyEndCut(r.waste).tier;
+    counts[t] += r.bars;
+    if (t > 1 && samples[t].length < 5){
+      samples[t].push({stockLen: r.stockLen, waste: r.waste, bars: r.bars});
+    }
+  });
+  return {counts, samples};
+}
+
+/**
+ * Show end-cut permission modal if scenario violates default 200mm rule.
+ * Resolves to {approved: bool, tiers: {t1, t2, t3, t4}}
+ * If approved: continue with current solution. If not: re-optimize excluding violating tiers.
+ */
+function checkEndCutPermissions(scenario, params){
+  return new Promise(resolve => {
+    const v = violationsByTier(scenario, params);
+    const needsApproval = v.counts[2] + v.counts[3] > 0;   // T4 (>500) = reusable offcut, no approval
+    if (!needsApproval){
+      resolve({approved: true, tiers: {t1:true, t2:true, t3:true, t4:true}});
+      return;
+    }
+
+    // Build modal
+    const fmt = n => Math.round(n).toLocaleString('en-IN');
+    let html = `<div class="modal" id="permModal" onclick="if(event.target===this)resolveCmpModal({approved:false})">
+      <div class="modal-content" style="max-width:780px">
+        <h2 class="display" style="font-size:18px;margin-bottom:8px;color:var(--amber)">⚠ End-Cut Approval Required</h2>
+        <p style="color:var(--ink2);margin-bottom:18px;font-size:12px;line-height:1.6">
+          This optimization produced patterns with end-cuts above the default 200 mm threshold.
+          As per OPTIMUS spec, planner approval is required to proceed. Tick the tiers you authorize.
+        </p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px">
+          <thead><tr style="background:var(--brand);color:var(--amber)">
+            <th style="padding:9px 12px;text-align:left;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.15em;text-transform:uppercase">Tier</th>
+            <th style="padding:9px 12px;text-align:left;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.15em;text-transform:uppercase">End-Cut Range</th>
+            <th style="padding:9px 12px;text-align:right;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.15em;text-transform:uppercase">Bars</th>
+            <th style="padding:9px 12px;text-align:left;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.15em;text-transform:uppercase">Sample</th>
+            <th style="padding:9px 12px;text-align:center;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.15em;text-transform:uppercase">Approve</th>
+          </tr></thead><tbody>`;
+    [
+      {t:2, lbl:'201 – 350 mm',  desc:'Marginal end-cut · planner approval needed',     dot:'var(--orange)'},
+      {t:3, lbl:'351 – 500 mm',  desc:'Significant end-cut · planner approval needed',  dot:'var(--orange)'}
+    ].forEach(row => {
+      const c = v.counts[row.t];
+      const samples = (v.samples[row.t]||[]).map(s => `${s.stockLen}→${s.waste}mm×${s.bars}`).join(', ') || '—';
+      const checked = row.t === 1 ? 'checked disabled' : '';
+      html += `
+        <tr style="border-bottom:1px solid var(--line)">
+          <td style="padding:10px 12px;font-family:'JetBrains Mono'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${row.dot};margin-right:6px"></span>T${row.t}</td>
+          <td style="padding:10px 12px"><b style="color:var(--ink-0)">${row.lbl}</b><div style="font-size:10px;color:var(--ink2);margin-top:2px">${row.desc}</div></td>
+          <td style="padding:10px 12px;text-align:right;font-family:'JetBrains Mono';font-weight:700;color:${c>0?'var(--amber)':'var(--ink-3)'}">${c}</td>
+          <td style="padding:10px 12px;font-family:'JetBrains Mono';font-size:10px;color:var(--ink2)">${samples}</td>
+          <td style="padding:10px 12px;text-align:center"><input type="checkbox" id="permT${row.t}" ${checked} ${row.t===1 ? '' : ''} style="transform:scale(1.4);accent-color:var(--amber);cursor:pointer"></td>
+        </tr>`;
+    });
+    html += `</tbody></table>
+        <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="resolveCmpModal({approved:false})">Cancel</button>
+          <button class="btn btn-amber" onclick="resolveCmpModal({approved:true,t2:document.getElementById('permT2').checked,t3:document.getElementById('permT3').checked})">✓ Apply Approvals</button>
+        </div>
+      </div></div>`;
+
+    window.resolveCmpModal = (out) => {
+      const m = document.getElementById('permModal');
+      if (m) m.remove();
+      delete window.resolveCmpModal;
+      if (!out.approved){ resolve({approved:false}); return; }
+      resolve({
+        approved: true,
+        tiers: {t1:true, t2:!!out.t2, t3:!!out.t3, t4:true}    // T4 always approved (reusable)
+      });
+    };
+    document.body.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+/**
+ * Filter scenario.result to remove patterns whose end-cut tier is not approved.
+ * Demand from removed bars is added back to shortfall.
+ */
+function applyTierFilter(scenario, tiers, params){
+  const kept = [];
+  const removed = [];
+  scenario.result.forEach(r => {
+    const t = classifyEndCut(r.waste).tier;
+    const ok = (t === 1) || (t === 2 && tiers.t2) || (t === 3 && tiers.t3) || (t === 4 && tiers.t4);
+    if (ok) kept.push(r); else removed.push(r);
+  });
+  // Recompute KPIs
+  let raw=0, cut=0, kerf=0, scrap=0, offcut=0, phys=0, virt=0;
+  kept.forEach(r => {
+    raw  += r.stockLen * r.bars;
+    cut  += r.cutMm    * r.bars;
+    kerf += r.cutN * params.pincher * r.bars;
+    if (r.waste >= 500){ offcut += r.waste * r.bars; r.offcut = true; }
+    else { scrap += Math.max(0, r.waste) * r.bars; r.offcut = false; }
+    if (r.isVirtual) virt += r.bars; else phys += r.bars;
+  });
+  // Recompute shortfall: original demand minus what kept patterns deliver
+  const demanded = {};
+  state.lastInput.demands.forEach(d => demanded[d.len] = (demanded[d.len]||0)+d.qty);
+  const delivered = {};
+  kept.forEach(r => r.pattern.forEach(([L,c]) => delivered[L] = (delivered[L]||0)+c*r.bars));
+  const shortfall = {};
+  let totalShort = 0;
+  Object.entries(demanded).forEach(([L,q]) => {
+    const got = delivered[+L] || 0;
+    if (q > got){ shortfall[L] = q - got; totalShort += q - got; }
+  });
+  scenario.result = kept;
+  scenario.removedByTierFilter = removed;
+  scenario.shortfall = shortfall;
+  scenario.totalShort = totalShort;
+  const totalScrap = scrap + kerf;
+  scenario.kpis = {
+    rawMm:raw, cutMm:cut, kerfMm:kerf, scrapMm:scrap, offcutMm:offcut,
+    utilStrict: raw ? (cut/raw*100):0,
+    utilWithOff: raw ? ((cut+offcut)/raw*100):0,
+    scrapPct: raw ? (scrap/raw*100):0,
+    kerfPct: raw ? (kerf/raw*100):0,
+    offcutPct: raw ? (offcut/raw*100):0,
+    totalScrapMm: totalScrap,
+    totalScrapPct: raw ? (totalScrap/raw*100):0,
+    totalBars: phys+virt, physBars:phys, virtualBars:virt,
+    patterns: kept.length,
+  };
+  return scenario;
+}
+
+/* ═══ GENERATE WORKFLOW WITH PROGRESS ═══════════════════════════ */
+async function generate(){
+  const project   = document.getElementById('projectCode').value.trim();
+  const section   = document.getElementById('sectionCode').value.trim();
+  const lot       = document.getElementById('lotNo').value.trim();
+  const pincher   = +document.getElementById('pincher').value || 0;
+  const endTrim   = +document.getElementById('endTrim').value || 0;
+  const endCutMax = +document.getElementById('endCutMax').value || 200;
+  const minOffcut = 500;   // hardcoded per OPTIMUS spec: ≥500mm = reusable offcut
+  const maxOpen   = +document.getElementById('maxOpen').value;
+  const mrpStdLen = +document.getElementById('mrpMode').value || 0;
+  // Permission tiers (planner approves each through modal if violated)
+  const approvedTiers = state.approvedTiers || {t1:true, t2:false, t3:false, t4:true};   // T4 = reusable, default OK
+  const params = {pincher, endTrim, minOffcut, endCutMax, maxOpen, mrpStdLen, approvedTiers};
+
+  if (!section){ setStatus('❌ Please select a Section / RM Code','err'); return; }
+  const stocks  = readStock();
+  const demands = readDemand();
+  if (!stocks.length){ setStatus('❌ No stock entries','err'); return; }
+  if (!demands.length){ setStatus('❌ No demand entries','err'); return; }
+
+  // Show progress card
+  document.getElementById('progressCard').classList.add('show');
+  document.getElementById('progressCard').scrollIntoView({behavior:'smooth'});
+  resetProgress();
+
+  const t0 = performance.now();
+
+  // STAGE 1: Parse input
+  await stage(1, 'Parsing input data...', 0.15);
+
+  // STAGE 2: Generate patterns (run a single scenario fast, peek at pattern count)
+  await stage(2, 'Generating cutting patterns...', 0.30);
+
+  // STAGE 3: Build all scenarios
+  await stage(3, 'Building 5 ranked scenarios...', 0.55);
+  const scenarios = await runWithProgress(stocks, demands, params);
+  const totalPatterns = scenarios.reduce((a,s) => a + (s.result?.length||0), 0);
+  document.getElementById('progPatterns').textContent = totalPatterns;
+  document.getElementById('progScenarios').textContent = `${scenarios.filter(s=>!s.error).length}/${SCENARIOS.length}`;
+
+  // STAGE 4: Rank
+  await stage(4, 'Ranking solutions by KPIs...', 0.80);
+  const recommended = pickRecommended(scenarios);
+  if (recommended >= 0) scenarios[recommended].recommended = true;
+
+  // STAGE 5: Finalise
+  await stage(5, 'Finalising report...', 0.95);
+
+  const dt = (performance.now() - t0);
+
+  // Confidence: based on demand satisfaction + scrap level of recommended
+  const recScen = scenarios[recommended];
+  let conf = 95;
+  if (recScen){
+    if (recScen.totalShort > 0) conf -= 20;
+    if (recScen.kpis.totalScrapPct > 1.5) conf -= 10;
+    if (recScen.kpis.totalScrapPct > 3) conf -= 15;
+  }
+  document.getElementById('progConfidence').textContent = conf + '%';
+  document.getElementById('progElapsed').textContent = (dt/1000).toFixed(2) + 's';
+  document.getElementById('progBar').style.width = '100%';
+
+  // Set state.lastInput EARLY (applyTierFilter needs state.lastInput.demands)
+  state.lastInput = {project, section, lot, planner: document.getElementById('plannerName').value,
+    rmEmbossing: document.getElementById('rmEmbossing').value,
+    rmIdNo: document.getElementById('rmIdNo').value,
+    pincher, endTrim, minOffcut, endCutMax, maxOpen, mrpStdLen, approvedTiers,
+    stocks, demands, dt};
+
+  // End-cut permission check on the recommended scenario
+  // (only blocks if violations and planner cancels — non-violating scenarios always OK)
+  const recScForPerm = scenarios[recommended];
+  if (recScForPerm && !recScForPerm.error){
+    const v = violationsByTier(recScForPerm, params);
+    const hasViolation = v.counts[2] + v.counts[3] > 0;   // T4 = reusable offcut, no approval
+    if (hasViolation){
+      // Hide progress card so modal is on top
+      document.getElementById('progressCard').classList.remove('show');
+      const decision = await checkEndCutPermissions(recScForPerm, params);
+      if (decision.approved){
+        state.approvedTiers = decision.tiers;
+        // Apply tier filter to all non-error scenarios
+        scenarios.forEach(s => {
+          if (!s.error) applyTierFilter(s, decision.tiers, params);
+        });
+        // Re-pick recommended (some scenarios may now have shortfall)
+        const newRec = pickRecommended(scenarios);
+        scenarios.forEach(s => s.recommended = false);
+        if (newRec >= 0) scenarios[newRec].recommended = true;
+        // Update reference
+        ;
+      } else {
+        // User cancelled — show input tab with warning
+        setStatus('⚠ Optimization cancelled. Adjust Max End-Cut threshold or stock & retry.', 'warn');
+        document.getElementById('progressCard').classList.remove('show');
+        return;
+      }
+    }
+  }
+
+  // Save to state
+  state.scenarios = scenarios;
+  state.activeScenario = scenarios.findIndex(s => s.recommended);
+  if (state.activeScenario < 0) state.activeScenario = recommended >= 0 ? recommended : 0;
+  state.lastInput.dt = dt;
+
+  setTimeout(() => {
+    document.getElementById('progressCard').classList.remove('show');
+    renderResults();
+    showTab('result');
+    document.getElementById('btnPrint').style.display = 'inline-flex';
+    setStatus(`✓ ${SCENARIOS.length} scenarios computed in ${(dt/1000).toFixed(2)}s · recommended scenario applied`, 'ok');
+  }, 600);
+}
+
+function resetProgress(){
+  document.querySelectorAll('.prog-stage').forEach(s => s.classList.remove('active','done'));
+  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('progPatterns').textContent = '0';
+  document.getElementById('progScenarios').textContent = '0/5';
+  document.getElementById('progConfidence').textContent = '—';
+  document.getElementById('progElapsed').textContent = '0.0s';
+}
+
+async function stage(num, msg, progress){
+  const stages = document.querySelectorAll('.prog-stage');
+  stages.forEach((s,i) => {
+    s.classList.remove('active');
+    if (i + 1 < num) s.classList.add('done');
+  });
+  if (stages[num-1]) stages[num-1].classList.add('active');
+  document.getElementById('progPhase').textContent = msg;
+  document.getElementById('progBar').style.width = (progress*100)+'%';
+  document.getElementById('progElapsed').textContent = (performance.now()/1000 - state._t0||0).toFixed(2) + 's';
+  await sleep(80 + Math.random()*60);   // brief animation
+}
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function runWithProgress(stocks, demands, params){
+  // Run all 5 scenarios. Apply ILS if scenario has shortfall (best-effort fix).
+  const out = [];
+  for (let i = 0; i < SCENARIOS.length; i++){
+    const sc = SCENARIOS[i];
+    document.getElementById('progPhase').textContent = `Computing ${sc.name}...`;
+
+    // First pass: deterministic greedy
+    let res = runScenario(stocks, demands, params, sc.score);
+    if (res.error){
+      out.push({...sc, error: res.error});
+      document.getElementById('progScenarios').textContent = `${out.length}/${SCENARIOS.length}`;
+      await sleep(20);
+      continue;
+    }
+
+    // If shortfall > 0, apply ILS (Iterated Local Search) — multi-start with randomization
+    if (res.totalShort > 0){
+      document.getElementById('progPhase').textContent = `${sc.name}: applying ILS to eliminate shortfall...`;
+      const t0 = performance.now();
+      const ITER = i === 0 ? 200 : 80;   // more iterations for top scenario
+      const ils = runScenarioILS(stocks, demands, params, sc.score, ITER, (it, total, score) => {
+        document.getElementById('progPhase').textContent =
+          `${sc.name}: ILS iter ${it}/${total} · best score ${Math.round(score).toLocaleString()}`;
+      });
+      if (!ils.error && (ils.totalShort < res.totalShort ||
+          (ils.totalShort === res.totalShort && ils.kpis.totalScrapMm < res.kpis.totalScrapMm))){
+        res = ils;
+      }
+      const dt = (performance.now() - t0).toFixed(0);
+      console.log(`ILS for ${sc.name}: ${ITER} iters in ${dt}ms, final shortfall=${res.totalShort}`);
+      // Yield to UI for animation
+      await sleep(20);
+    }
+
+    out.push({...sc, result: res.result, kpis: res.kpis,
+      shortfall: res.shortfall, totalShort: res.totalShort});
+    document.getElementById('progScenarios').textContent = `${out.length}/${SCENARIOS.length}`;
+    await sleep(20);
+  }
+  return out;
+}
+
+/* ═══ RENDER RESULTS ════════════════════════════════════════════ */
+function renderResults(){
+  if (!state.scenarios.length) return;
+  renderScenarios();
+  renderActive();
+}
+
+function renderScenarios(){
+  const c = document.getElementById('scenarios');
+  c.innerHTML = '';
+  const fmt = n => Math.round(n).toLocaleString('en-IN');
+  state.scenarios.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'scenario' + (i === state.activeScenario ? ' active' : '') + (s.recommended ? ' recommended' : '');
+    div.onclick = () => { state.activeScenario = i; renderResults(); };
+    if (s.error){
+      div.innerHTML = `
+        <div class="name">${s.name}</div>
+        <div class="desc" style="color:var(--red)">⚠ ${s.error}</div>`;
+    } else {
+      const k = s.kpis;
+      div.innerHTML = `
+        <div class="name">${s.name}</div>
+        <div class="desc">${s.desc}</div>
+        <div class="stats">
+          <div class="stat-l">Total scrap</div><div class="stat-v">${k.totalScrapPct.toFixed(2)}%</div>
+          <div class="stat-l">Bars</div><div class="stat-v">${k.totalBars}</div>
+          <div class="stat-l">Patterns</div><div class="stat-v">${k.patterns}</div>
+          <div class="stat-l">Shortfall</div><div class="stat-v" style="color:${s.totalShort?'var(--red)':'inherit'}">${s.totalShort||0}</div>
+        </div>`;
+    }
+    c.appendChild(div);
+  });
+  document.getElementById('scenariosMeta').textContent =
+    `${state.scenarios.filter(s=>!s.error).length}/${SCENARIOS.length} solutions · click any to compare`;
+}
+
+function renderActive(){
+  const sc = state.scenarios[state.activeScenario];
+  if (!sc || sc.error) return;
+  const L = state.lastInput;
+  const sec = findSection(L.section);
+  const kgM = sec ? sec[1] : 0;
+  const k = sc.kpis;
+  const fmt = n => Math.round(n).toLocaleString('en-IN');
+  const fmtKg = mm => fmt(mm/1000 * kgM);
+
+  // Print header
+  document.getElementById('phProject').textContent = L.project || '—';
+  document.getElementById('phSection').textContent = L.section + (kgM ? ` (${kgM} kg/m)` : '');
+  document.getElementById('phLot').textContent = L.lot || '—';
+  document.getElementById('phDate').textContent = document.getElementById('runDate').value || new Date().toLocaleDateString();
+  document.getElementById('phUser').textContent = L.planner || '—';
+  document.getElementById('phEmboss').textContent = L.rmEmbossing || '—';
+  document.getElementById('phRmId').textContent = L.rmIdNo || '—';
+  document.getElementById('phPincher').textContent = `${L.pincher} mm (kerf, NOT in bar length)`;
+
+  // 3-card scrap dashboard
+  const target = 1.5;
+  const ts = k.totalScrapPct;
+  document.getElementById('vTotalScrap').innerHTML = `${ts.toFixed(2)}<span class="u">%</span>`;
+  document.getElementById('vTotalKg').textContent = `${fmtKg(k.totalScrapMm)} kg`;
+  const tCard = document.getElementById('kpiTotal');
+  tCard.className = 'kpi ' + (ts < target ? 'ok' : ts < 2.5 ? 'warn' : 'bad');
+  document.getElementById('bTotalScrap').style.width = Math.min(100, ts/3*100) + '%';
+
+  document.getElementById('vPincher').innerHTML = `${k.kerfPct.toFixed(2)}<span class="u">%</span>`;
+  document.getElementById('vPincherKg').textContent = `${fmtKg(k.kerfMm)} kg`;
+  document.getElementById('bPincher').style.width = Math.min(100, k.kerfPct/3*100) + '%';
+
+  document.getElementById('vEndCut').innerHTML = `${k.scrapPct.toFixed(2)}<span class="u">%</span>`;
+  document.getElementById('vEndCutKg').textContent = `${fmtKg(k.scrapMm)} kg`;
+  const eCard = document.getElementById('kpiEndCut');
+  eCard.className = 'kpi ' + (k.scrapPct < 1 ? 'ok' : k.scrapPct < 2 ? 'warn' : 'bad');
+  document.getElementById('bEndCut').style.width = Math.min(100, k.scrapPct/3*100) + '%';
+
+  // Small KPIs
+  document.getElementById('sUtil').innerHTML = `${k.utilStrict.toFixed(2)}<span class="u">%</span>`;
+  document.getElementById('sBars').textContent = k.totalBars;
+  document.getElementById('sBarsBreak').textContent = `${k.physBars} inv + ${k.virtualBars} new`;
+  document.getElementById('sPatterns').textContent = k.patterns;
+  document.getElementById('sSolveTime').textContent = `${(L.dt).toFixed(0)} ms`;
+  const totReq = L.demands.reduce((a,b)=>a+b.qty,0);
+  const totDel = totReq - sc.totalShort;
+  document.getElementById('sDemand').innerHTML = `${totDel}<span class="u">/${totReq}</span>`;
+  document.getElementById('sShortfall').textContent = sc.totalShort > 0 ? `${sc.totalShort} pcs short` : 'all delivered';
+  document.getElementById('sOffcut').innerHTML = `${k.offcutPct.toFixed(2)}<span class="u">%</span>`;
+  document.getElementById('sOffcutKg').textContent = `${fmtKg(k.offcutMm)} kg`;
+  document.getElementById('sRaw').innerHTML = `${fmtKg(k.rawMm)}<span class="u">kg</span>`;
+  document.getElementById('sRawM').textContent = `${(k.rawMm/1000).toFixed(0)} m raw`;
+
+  // Material flow
+  const fb = document.getElementById('flowBar');
+  const segs = [
+    {cls:'f-cut',   pct:k.cutMm/k.rawMm*100,    lbl:`Cuts ${k.utilStrict.toFixed(1)}%`},
+    {cls:'f-pin',   pct:k.kerfMm/k.rawMm*100,   lbl:`Pincher ${k.kerfPct.toFixed(1)}%`},
+    {cls:'f-off',   pct:k.offcutMm/k.rawMm*100, lbl:`Offcut ${k.offcutPct.toFixed(1)}%`},
+    {cls:'f-scrap', pct:k.scrapMm/k.rawMm*100,  lbl:`End-cut ${k.scrapPct.toFixed(1)}%`},
+  ];
+  fb.innerHTML = segs.filter(s=>s.pct>0.05).map(s =>
+    `<div class="${s.cls}" style="flex:${s.pct.toFixed(2)}">${s.lbl}</div>`).join('');
+  document.getElementById('flowMeta').textContent = `Total: ${fmtKg(k.rawMm)} kg · ${fmt(k.rawMm/1000)} m`;
+
+  // Cutting plan table
+  document.getElementById('planMeta').textContent =
+    `${sc.name} · ${k.patterns} patterns · ${k.totalBars} bars · max ${L.maxOpen} cuts/bar · pincher ${L.pincher} mm`;
+  const cpBody = document.getElementById('cpBody');
+  cpBody.innerHTML = '';
+  sc.result.forEach((r, i) => {
+    const cuts = [];
+    r.pattern.forEach(([Ll, c]) => cuts.push([Ll, c]));
+    while (cuts.length < 4) cuts.push(null);
+    const util = (r.cutMm / r.stockLen * 100).toFixed(1);
+    let stat, statCls;
+    if (r.waste < 50)             { stat='EXCELLENT'; statCls='b-good'; }
+    else if (r.waste < 200)       { stat='GOOD';      statCls='b-good'; }
+    else if (r.waste < L.minOffcut){ stat='OK';       statCls='b-warn'; }
+    else                          { stat='OFFCUT';    statCls='b-cyan'; }
+    const srcCls = r.isVirtual ? 'b-pr' : 'b-inv';
+    const srcTxt = r.isVirtual ? 'NEW (PR)' : 'INV';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td><b>${fmt(r.stockLen)}</b></td>
+      <td><span class="badge ${srcCls}">${srcTxt}</span></td>
+      <td><b style="color:var(--amber)">${r.bars}</b></td>
+      ${cuts.map(c => c ?
+        `<td>${fmt(c[0])}</td><td style="color:var(--ink2)">×${c[1]}</td>` :
+        `<td style="color:var(--ink3)">—</td><td>—</td>`).join('')}
+      <td>${fmt(Math.max(0, r.waste))}</td>
+      <td>${util}%</td>
+      <td><span class="badge ${statCls}">${stat}</span></td>`;
+    cpBody.appendChild(tr);
+  });
+  document.getElementById('cpFoot').innerHTML = `
+    <tr style="background:rgba(255,184,0,.08);font-weight:700;color:var(--amber)">
+      <td colspan="3" style="text-align:right;padding:10px 12px">TOTAL</td>
+      <td>${k.totalBars}</td>
+      <td colspan="8"></td>
+      <td>${fmt(k.scrapMm + k.offcutMm)}</td>
+      <td>${k.utilStrict.toFixed(1)}%</td>
+      <td></td>
+    </tr>`;
+
+  // Patterns visualisation
+  const maxStock = Math.max(...sc.result.map(r => r.stockLen));
+  const patList = document.getElementById('patList');
+  patList.innerHTML = '';
+  sc.result.forEach(r => {
+    const widthPct = (r.stockLen / maxStock * 100).toFixed(1);
+    let inner = '';
+    r.pattern.forEach(([Ll, c], pi) => {
+      for (let j = 0; j < c; j++){
+        inner += `<div class="pat-cut c${(pi%4)+1}" style="flex:${Ll}" title="${Ll} mm">${Ll}</div>`;
+      }
+    });
+    if (r.waste > 0){
+      const cls = r.offcut ? 'pat-off' : 'pat-eb';
+      const lbl = r.offcut ? `OFFCUT ${r.waste}` : `EB ${r.waste}`;
+      inner += `<div class="${cls}" style="flex:${r.waste}" title="${lbl} mm">${lbl}</div>`;
+    }
+    const row = document.createElement('div');
+    row.className = 'pat-row';
+    row.innerHTML = `
+      <div class="pat-meta">
+        <b>${fmt(r.stockLen)} mm</b>
+        <span class="src ${r.isVirtual?'pr':''}">${r.isVirtual?'NEW · PR':'INV'}</span>
+        <span style="color:var(--amber);font-weight:700">× ${r.bars} bars</span>
+      </div>
+      <div class="pat-bar" style="width:${widthPct}%">${inner}</div>
+      <div class="pat-stat">
+        <div class="b">${(r.cutMm/r.stockLen*100).toFixed(1)}%</div>
+        <div class="s">${r.waste} mm waste</div>
+      </div>`;
+    patList.appendChild(row);
+  });
+
+  // Demand satisfaction
+  const dem = {};
+  L.demands.forEach(d => dem[d.len] = (dem[d.len]||0) + d.qty);
+  const delivered = {};
+  sc.result.forEach(r => r.pattern.forEach(([Ll,c]) => delivered[Ll] = (delivered[Ll]||0) + c*r.bars));
+  const demList = document.getElementById('demList');
+  demList.innerHTML = '';
+  let totReq2=0, totDel2=0;
+  Object.entries(dem).sort((a,b)=>+b[0]-+a[0]).forEach(([Lstr, req]) => {
+    const del = delivered[+Lstr] || 0;
+    totReq2 += req; totDel2 += Math.min(del, req);
+    const pct = Math.min(100, del/req*100);
+    const short = del < req;
+    demList.innerHTML += `
+      <div class="dem-row">
+        <div class="dem-lbl">${fmt(+Lstr)} mm</div>
+        <div class="dem-bar"><div class="dem-fill ${short?'short':''}" style="width:${pct}%"></div></div>
+        <div class="dem-val ${short?'short':''}">${del}/${req}</div>
+      </div>`;
+  });
+  document.getElementById('demSatMeta').textContent = `${totDel2}/${totReq2} pcs · ${(totDel2/totReq2*100).toFixed(1)}%`;
+
+  // PR list
+  const prCounts = {};
+  sc.result.filter(r => r.isVirtual).forEach(r => prCounts[r.stockLen] = (prCounts[r.stockLen]||0) + r.bars);
+  const prList = document.getElementById('prList');
+  prList.innerHTML = Object.keys(prCounts).length ?
+    Object.entries(prCounts).map(([Ll, n]) =>
+      `<div style="padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between">
+        <span>${fmt(+Ll)} mm bars</span>
+        <span style="color:var(--amber);font-weight:700">${n} bars · ${fmtKg(+Ll * n)} kg</span>
+      </div>`).join('') :
+    '<div style="color:var(--good)">✓ No new procurement needed.</div>';
+
+  // Offcut list
+  const ofMap = {};
+  sc.result.filter(r => r.offcut).forEach(r => ofMap[r.waste] = (ofMap[r.waste]||0) + r.bars);
+  const ofList = document.getElementById('offcutList');
+  ofList.innerHTML = Object.keys(ofMap).length ?
+    Object.entries(ofMap).sort((a,b)=>+b[0]-+a[0]).map(([Ll, n]) =>
+      `<div style="padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between">
+        <span>${fmt(+Ll)} mm × ${n}</span>
+        <span style="color:var(--cyan);font-weight:700">${fmtKg(+Ll * n)} kg recoverable</span>
+      </div>`).join('') :
+    `<div style="color:var(--ink2)">No reusable offcut (residuals < ${L.minOffcut} mm).</div>`;
+
+  // Shortfall
+  const shortList = document.getElementById('shortList');
+  if (sc.totalShort > 0){
+    shortList.innerHTML = Object.entries(sc.shortfall).map(([Ll, q]) =>
+      `<div style="padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between">
+        <span>${fmt(+Ll)} mm</span>
+        <span style="color:var(--red);font-weight:700">SHORT ${q} pcs · ${fmtKg(+Ll * q)} kg</span>
+      </div>`).join('');
+  } else {
+    shortList.innerHTML = '<div style="color:var(--good)">✓ All demand satisfied.</div>';
+  }
+
+  // Also render the industrial reports
+  renderAllReports();
+}
+
+function showReport(name, btn){
+  document.querySelectorAll('[data-rtab]').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.rpt-body').forEach(b => b.classList.add('hidden'));
+  document.getElementById('report-' + name)?.classList.remove('hidden');
+}
+
+function renderAllReports(){
+  const sc = state.scenarios[state.activeScenario];
+  if (!sc || sc.error) return;
+  const L = state.lastInput;
+  const sec = findSection(L.section);
+  const kgM = sec ? sec[1] : 0;
+  const fmt = n => Math.round(n).toLocaleString('en-IN');
+  const fmtKg = mm => fmt(mm/1000 * kgM);
+
+  // ─── SCRAP REPORT ───
+  let scrapTotal = 0, kerfTotal = 0;
+  const scrapRows = sc.result.map((r, i) => {
+    const eb = r.waste;
+    const eb_kg = eb / 1000 * kgM * r.bars;
+    const kerf = r.cutN * L.pincher;
+    const kerf_kg = kerf / 1000 * kgM * r.bars;
+    scrapTotal += (eb < 500 ? eb : 0) * r.bars;
+    kerfTotal += kerf * r.bars;
+    const tier = classifyEndCut(eb);
+    return {idx:i+1, stockLen:r.stockLen, bars:r.bars, eb, eb_kg, kerf, kerf_kg, tier};
+  });
+  const totalScrapKg = scrapTotal/1000 * kgM;
+  const totalKerfKg = kerfTotal/1000 * kgM;
+  document.getElementById('scrapReport').innerHTML = `
+    <div class="row3" style="margin-bottom:14px">
+      <div class="skpi"><div class="skpi-lbl">Total Scrap</div><div class="skpi-val">${(sc.kpis.totalScrapPct).toFixed(2)}<span class="u">%</span></div><div class="skpi-sub">${fmt(totalScrapKg+totalKerfKg)} kg</div></div>
+      <div class="skpi"><div class="skpi-lbl">End-Cut (residuals)</div><div class="skpi-val">${(sc.kpis.scrapPct).toFixed(2)}<span class="u">%</span></div><div class="skpi-sub">${fmt(totalScrapKg)} kg</div></div>
+      <div class="skpi"><div class="skpi-lbl">Pincher (saw kerf)</div><div class="skpi-val">${(sc.kpis.kerfPct).toFixed(2)}<span class="u">%</span></div><div class="skpi-sub">${fmt(totalKerfKg)} kg</div></div>
+    </div>
+    <table class="cp-tbl">
+      <thead><tr><th>#</th><th>Stock</th><th>Bars</th><th>End-Bit (mm)</th><th>End-Bit kg</th><th>Pincher kg</th><th>Total Loss kg</th><th>Tier</th></tr></thead>
+      <tbody>${scrapRows.map(r => `
+        <tr>
+          <td>${r.idx}</td>
+          <td>${fmt(r.stockLen)}</td>
+          <td>${r.bars}</td>
+          <td>${fmt(r.eb)}</td>
+          <td>${fmt(r.eb_kg)}</td>
+          <td>${fmt(r.kerf_kg)}</td>
+          <td><b>${fmt(r.eb_kg + r.kerf_kg)}</b></td>
+          <td><span class="badge ${r.tier.cls}">${r.tier.label}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // ─── END-CUT REPORT (tier-grouped) ───
+  const tierStats = {1:{bars:0,kg:0,samples:[]}, 2:{bars:0,kg:0,samples:[]},
+                     3:{bars:0,kg:0,samples:[]}, 4:{bars:0,kg:0,samples:[]}};
+  sc.result.forEach(r => {
+    const t = classifyEndCut(r.waste).tier;
+    tierStats[t].bars += r.bars;
+    tierStats[t].kg += r.waste/1000 * kgM * r.bars;
+    if (tierStats[t].samples.length < 12){
+      tierStats[t].samples.push({SL:r.stockLen, eb:r.waste, bars:r.bars});
+    }
+  });
+  document.getElementById('endcutReport').innerHTML = `
+    <p style="color:var(--ink2);margin-bottom:14px;font-size:12px">
+      End-cuts grouped by tier per OPTIMUS rule:
+      T1 ≤200 (OK default) · T2 201-350 (approval) · T3 351-500 (approval) · T4 &gt;500 (reusable offcut).
+    </p>
+    <div class="row4" style="margin-bottom:14px">
+      ${[1,2,3,4].map(t => {
+        const ts = tierStats[t];
+        const lbl = t===1?'T1 · ≤200':t===2?'T2 · 201-350':t===3?'T3 · 351-500':'T4 · >500 (reusable)';
+        const cls = t===1?'ok':t===2||t===3?'warn':'cyan';
+        return `<div class="skpi"><div class="skpi-lbl">${lbl}</div><div class="skpi-val">${ts.bars}<span class="u">bars</span></div><div class="skpi-sub">${fmt(ts.kg)} kg total</div></div>`;
+      }).join('')}
+    </div>
+    ${[2,3,4].map(t => {
+      const ts = tierStats[t];
+      if (!ts.bars) return '';
+      const tierLabel = t===2?'TIER 2 (201-350 mm)':t===3?'TIER 3 (351-500 mm)':'TIER 4 (>500 mm REUSABLE)';
+      return `<h3 style="font-family:'IBM Plex Sans Condensed';font-size:13px;color:var(--brand);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px;border-left:3px solid var(--accent);padding-left:8px">${tierLabel} — ${ts.bars} bars · ${fmt(ts.kg)} kg</h3>
+      <table class="cp-tbl"><thead><tr><th>Stock Len</th><th>End-Bit</th><th>Bars</th><th>Weight (kg)</th></tr></thead><tbody>
+      ${ts.samples.map(s => `<tr><td>${fmt(s.SL)}</td><td>${fmt(s.eb)}</td><td>${s.bars}</td><td>${fmt(s.eb/1000*kgM*s.bars)}</td></tr>`).join('')}
+      </tbody></table>`;
+    }).join('')}
+  `;
+
+  // ─── BALANCE STOCK REPORT (unused bars) ───
+  const usedByLen = {};
+  sc.result.forEach(r => { if (!r.isVirtual) usedByLen[r.stockLen] = (usedByLen[r.stockLen]||0)+r.bars; });
+  const inputStockByLen = {};
+  L.stocks.forEach(s => inputStockByLen[s.len] = (inputStockByLen[s.len]||0)+s.qty);
+  const balanceRows = Object.entries(inputStockByLen).map(([Ll, qty]) => {
+    const used = usedByLen[+Ll] || 0;
+    const balance = qty - used;
+    return {len:+Ll, qty, used, balance, balance_kg: balance/1000*kgM*(+Ll)};
+  }).sort((a,b) => b.len - a.len);
+  const totalBalance = balanceRows.reduce((a,b) => a+b.balance, 0);
+  const totalBalanceKg = balanceRows.reduce((a,b) => a+b.balance_kg, 0);
+  document.getElementById('balanceReport').innerHTML = `
+    <div class="row3" style="margin-bottom:14px">
+      <div class="skpi"><div class="skpi-lbl">Total Balance Bars</div><div class="skpi-val">${totalBalance}<span class="u">bars</span></div><div class="skpi-sub">unused after run</div></div>
+      <div class="skpi"><div class="skpi-lbl">Balance Weight</div><div class="skpi-val">${fmt(totalBalanceKg)}<span class="u">kg</span></div><div class="skpi-sub">reusable for next run</div></div>
+      <div class="skpi"><div class="skpi-lbl">Stock Utilisation</div><div class="skpi-val">${(L.stocks.reduce((a,b)=>a+b.qty,0) ? (1 - totalBalance/L.stocks.reduce((a,b)=>a+b.qty,0))*100 : 0).toFixed(1)}<span class="u">%</span></div><div class="skpi-sub">of input bars used</div></div>
+    </div>
+    <table class="cp-tbl">
+      <thead><tr><th>Stock Length</th><th>Input Qty</th><th>Used</th><th>Balance</th><th>Balance Weight (kg)</th><th>Status</th></tr></thead>
+      <tbody>${balanceRows.map(r => `
+        <tr>
+          <td><b>${fmt(r.len)}</b></td>
+          <td>${r.qty}</td>
+          <td>${r.used}</td>
+          <td style="color:${r.balance > 0 ? 'var(--good)' : 'var(--ink3)'};font-weight:700">${r.balance}</td>
+          <td>${fmt(r.balance_kg)}</td>
+          <td><span class="badge ${r.balance === 0 ? 'b-good' : r.balance < r.qty/2 ? 'b-warn' : 'b-cyan'}">${r.balance === 0 ? 'FULLY USED' : r.balance < r.qty/2 ? 'PARTLY USED' : 'MOSTLY UNUSED'}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // ─── PENDING FABRICATION REPORT ───
+  const demanded = {};
+  L.demands.forEach(d => {
+    const key = d.mark ? `${d.mark}__${d.len}` : `${d.len}`;
+    demanded[key] = demanded[key] || {mark:d.mark, len:d.len, required:0};
+    demanded[key].required += d.qty;
+  });
+  const delivered = {};
+  sc.result.forEach(r => r.pattern.forEach(([Ll,c]) => delivered[Ll] = (delivered[Ll]||0) + c*r.bars));
+  // Allocate delivered to jobs (proportional)
+  const jobs = Object.values(demanded).map(j => {
+    const totalForLen = L.demands.filter(d => d.len === j.len).reduce((a,b)=>a+b.qty,0);
+    const share = totalForLen ? (j.required / totalForLen) : 0;
+    const got = Math.round((delivered[j.len]||0) * share);
+    return {
+      mark: j.mark || '—',
+      len: j.len,
+      required: j.required,
+      done: Math.min(got, j.required),
+      pending: Math.max(0, j.required - got),
+      done_kg: Math.min(got, j.required) / 1000 * j.len * kgM,
+      pending_kg: Math.max(0, j.required - got) / 1000 * j.len * kgM,
+    };
+  }).sort((a,b) => b.len - a.len);
+  const totalPending = jobs.reduce((a,b) => a+b.pending, 0);
+  const totalDone = jobs.reduce((a,b) => a+b.done, 0);
+  const totalReq = jobs.reduce((a,b) => a+b.required, 0);
+  document.getElementById('pendingReport').innerHTML = `
+    <div class="row3" style="margin-bottom:14px">
+      <div class="skpi"><div class="skpi-lbl">Jobs Completed</div><div class="skpi-val">${totalDone}<span class="u">/${totalReq}</span></div><div class="skpi-sub">${totalReq ? (totalDone/totalReq*100).toFixed(1) : 0}%</div></div>
+      <div class="skpi"><div class="skpi-lbl">Jobs Pending</div><div class="skpi-val" style="color:${totalPending?'var(--bad)':'var(--good)'}">${totalPending}<span class="u">pcs</span></div><div class="skpi-sub">${jobs.filter(j=>j.pending>0).length} job lines</div></div>
+      <div class="skpi"><div class="skpi-lbl">Pending Weight</div><div class="skpi-val">${fmt(jobs.reduce((a,b)=>a+b.pending_kg,0))}<span class="u">kg</span></div><div class="skpi-sub">remaining to fabricate</div></div>
+    </div>
+    <table class="cp-tbl">
+      <thead><tr><th>Mark</th><th>Cut Length</th><th>Required</th><th>Completed</th><th>Pending</th><th>Done %</th><th>Pending Weight</th><th>Status</th></tr></thead>
+      <tbody>${jobs.map(j => `
+        <tr>
+          <td>${j.mark}</td>
+          <td><b>${fmt(j.len)} mm</b></td>
+          <td>${j.required}</td>
+          <td style="color:var(--good);font-weight:700">${j.done}</td>
+          <td style="color:${j.pending?'var(--bad)':'var(--ink3)'};font-weight:${j.pending?700:400}">${j.pending}</td>
+          <td>${j.required ? (j.done/j.required*100).toFixed(0) : 0}%</td>
+          <td>${fmt(j.pending_kg)} kg</td>
+          <td><span class="badge ${j.pending===0?'b-good':j.done===0?'b-bad':'b-warn'}">${j.pending===0?'COMPLETE':j.done===0?'NOT STARTED':'PARTIAL'}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // ─── EXCEL COMPARISON REPORT ───
+  if (state.uploadedExcelKpis){
+    const ex = state.uploadedExcelKpis;
+    const ap = sc.kpis;
+    const apScrapKg = ap.scrapMm/1000*kgM + ap.kerfMm/1000*kgM;
+    const exScrapPct = ex.scrapPct;   // end-bit only from Excel
+    const apScrapPct = ap.scrapPct;
+    const verdict = apScrapPct < exScrapPct ? 'OPTIMUS BETTER' : apScrapPct > exScrapPct ? 'EXCEL BETTER' : 'EQUAL';
+    const vCls = apScrapPct < exScrapPct ? 'b-good' : apScrapPct > exScrapPct ? 'b-bad' : 'b-warn';
+    document.getElementById('compareReport').innerHTML = `
+      <p style="color:var(--ink2);margin-bottom:14px;font-size:12px">
+        Comparison: <b>uploaded Excel's existing cutting plan</b> vs <b>OPTIMUS-generated plan</b> on the same stock and demand.
+      </p>
+      <table class="cp-tbl">
+        <thead><tr><th>Metric</th><th>Uploaded Excel</th><th>OPTIMUS</th><th>Delta</th></tr></thead>
+        <tbody>
+          <tr><td>Bars used</td><td>${ex.bars}</td><td><b>${ap.totalBars}</b></td><td style="color:${ap.totalBars<ex.bars?'var(--good)':'var(--bad)'};font-weight:700">${ap.totalBars - ex.bars > 0 ? '+' : ''}${ap.totalBars - ex.bars}</td></tr>
+          <tr><td>Raw material (kg)</td><td>${fmt(ex.rawMm/1000*kgM)}</td><td><b>${fmt(ap.rawMm/1000*kgM)}</b></td><td>${fmt((ap.rawMm-ex.rawMm)/1000*kgM)}</td></tr>
+          <tr><td>End-bit scrap (mm)</td><td>${fmt(ex.scrapMm)}</td><td><b>${fmt(ap.scrapMm)}</b></td><td style="color:${ap.scrapMm<ex.scrapMm?'var(--good)':'var(--bad)'}">${fmt(ap.scrapMm - ex.scrapMm)}</td></tr>
+          <tr><td>End-bit scrap %</td><td>${exScrapPct.toFixed(2)}%</td><td><b>${apScrapPct.toFixed(2)}%</b></td><td style="color:${apScrapPct<exScrapPct?'var(--good)':'var(--bad)'};font-weight:700">${(apScrapPct-exScrapPct).toFixed(2)} pp</td></tr>
+          <tr><td>Total cuts delivered</td><td>${Math.round(ex.cuts)}</td><td><b>${L.demands.reduce((a,b)=>a+b.qty,0) - sc.totalShort}</b></td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:14px;padding:12px;background:#fef9c3;border-left:3px solid var(--accent);border-radius:5px">
+        <span class="badge ${vCls}" style="font-size:11px">${verdict}</span>
+        <span style="margin-left:10px;font-size:12px;color:var(--ink2)">
+          ${apScrapPct < exScrapPct ?
+            'OPTIMUS found a plan with lower end-bit scrap on the same demand.' :
+            apScrapPct > exScrapPct ?
+            'The uploaded Excel achieves lower scrap. Possible reason: planner used patterns OPTIMUS\'s greedy missed — try server-MILP or share for algorithm tuning.' :
+            'Same scrap level achieved.'}
+        </span>
+      </div>
+    `;
+  } else {
+    document.getElementById('compareReport').innerHTML = `
+      <div style="padding:30px;text-align:center;color:var(--ink3)">
+        <div style="font-size:32px;margin-bottom:8px">📤</div>
+        <div style="font-size:13px">Upload an Excel cutting combination file to enable comparison.</div>
+        <div style="font-size:11px;margin-top:4px">OPTIMUS will reverse-engineer the implied demand from the Excel and run its own optimization for side-by-side comparison.</div>
+      </div>
+    `;
+  }
+}
+
+/* ═══ FILE UPLOAD (Drag-drop + click) ═══════════════════════════ */
+function setupDropZone(){
+  const dz = document.getElementById('dropZone');
+  ['dragenter','dragover'].forEach(ev =>
+    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev =>
+    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragover'); }));
+  dz.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) parseFile(f);
+  });
+}
+
+function onFileUpload(e){
+  const f = e.target.files[0];
+  if (f) parseFile(f);
+  e.target.value = '';
+}
+
+function parseFile(file){
+  const ext = file.name.toLowerCase().split('.').pop();
+  if (ext === 'json') parseJSON(file);
+  else if (ext === 'xlsx' || ext === 'xls') parseExcel(file);
+  else setStatus('❌ Unsupported file type: ' + ext, 'err');
+}
+
+function parseJSON(file){
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      restoreFromData(d);
+      setStatus(`✓ Loaded ${file.name}`, 'ok');
+    } catch(err){
+      setStatus('❌ Could not parse JSON: ' + err.message, 'err');
+    }
+  };
+  r.readAsText(file);
+}
+
+function parseExcel(file){
+  setStatus(`⏳ Parsing Excel: ${file.name}...`);
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+
+      // Check if it's a multi-sheet combination workbook (e.g. COMBINATION_SHIT)
+      const combSheets = wb.SheetNames.filter(n => {
+        const sh = wb.Sheets[n];
+        const cell = (sh['B1'] && sh['B1'].v) || (sh['A1'] && sh['A1'].v) || '';
+        return String(cell).toLowerCase().includes('cutting combination');
+      });
+
+      if (combSheets.length >= 2){
+        // Multi-section workbook — let user pick a sheet
+        promptSheetSelection(wb, combSheets);
+        return;
+      }
+      // Single sheet handling
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const grid = XLSX.utils.sheet_to_json(sheet, {header:1, defval:null});
+
+      const detected = detectFormat(grid);
+      if (detected.kind === 'lnt_combination'){
+        applyLntCombination(grid, detected);
+        setStatus(`✓ Parsed cutting combination: ${detected.section || 'unknown section'}`, 'ok');
+      } else if (detected.kind === 'simple_two_col'){
+        applySimpleStockDemand(grid);
+        setStatus(`✓ Parsed simple stock+demand layout`, 'ok');
+      } else {
+        setStatus(`⚠ Could not auto-detect format. ${grid.length} rows read. Try paste manually.`, 'warn');
+      }
+    } catch(err){
+      setStatus('❌ Could not parse Excel: ' + err.message, 'err');
+      console.error(err);
+    }
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function promptSheetSelection(wb, combSheets){
+  // Modal listing all combination sheets, planner picks one
+  let html = `<div class="modal" id="sheetPickerModal" onclick="if(event.target===this)this.remove()">
+    <div class="modal-content" style="max-width:680px">
+      <h2 class="display" style="font-size:18px;margin-bottom:8px;color:var(--brand)">📋 Multi-Section Workbook Detected</h2>
+      <p style="color:var(--ink2);margin-bottom:18px;font-size:12px;line-height:1.6">
+        This Excel contains <b>${combSheets.length} cutting combination sheets</b>. Select which section to load. We'll extract stocks and reverse-engineer the implied demand from the combinations.
+      </p>
+      <div style="max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:5px">
+        <table class="cp-tbl"><thead><tr>
+          <th>#</th><th>Sheet Name</th><th>Section</th><th>Rows w/ Data</th><th></th>
+        </tr></thead><tbody>`;
+  combSheets.forEach((sn, i) => {
+    const sh = wb.Sheets[sn];
+    const grid = XLSX.utils.sheet_to_json(sh, {header:1, defval:null});
+    const section = (grid[0] && grid[0][5]) || sn;
+    const grade   = (grid[0] && grid[0][7]) || '';
+    const rowsWithData = grid.slice(3).filter(r => r && typeof r[1] === 'number' && r[1] > 100 && typeof r[2] === 'number' && r[2] > 0).length;
+    html += `<tr style="cursor:pointer" onclick="window.pickCombSheet(${i})">
+      <td>${i+1}</td>
+      <td><b>${sn}</b></td>
+      <td>${section} ${grade}</td>
+      <td style="text-align:right">${rowsWithData}</td>
+      <td><button class="btn btn-sm" style="background:var(--accent);color:var(--brand);border-color:var(--accent)">Load</button></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>
+    <div style="margin-top:18px;text-align:right">
+      <button class="btn" style="background:#f1f5f9;color:var(--brand);border-color:var(--line2)" onclick="this.closest('.modal').remove()">Cancel</button>
+    </div>
+    </div></div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  // Stash workbook
+  window._comb_wb = wb;
+  window._comb_sheets = combSheets;
+  window.pickCombSheet = (idx) => {
+    const sn = window._comb_sheets[idx];
+    const sh = window._comb_wb.Sheets[sn];
+    const grid = XLSX.utils.sheet_to_json(sh, {header:1, defval:null});
+    const detected = detectFormat(grid);
+    if (detected.kind === 'lnt_combination'){
+      applyLntCombination(grid, detected);
+      setStatus(`✓ Loaded ${sn} from multi-sheet workbook`, 'ok');
+    } else {
+      setStatus(`⚠ Sheet ${sn} format not recognised`, 'warn');
+    }
+    document.getElementById('sheetPickerModal')?.remove();
+  };
+}
+
+function detectFormat(grid){
+  const head = grid.slice(0, 6).flat().filter(Boolean).map(String).join(' ').toLowerCase();
+  if (head.includes('cutting combination') || head.includes('bar lgth') || head.includes('job a')){
+    let sec = '', grade = '';
+    // Try B1, F1, H1 (section + grade typically here)
+    if (grid[0]){
+      for (let c = 0; c < (grid[0]?.length||0); c++){
+        const cell = grid[0][c];
+        if (typeof cell === 'string' && /\bL\d+\s*[xX×]\s*\d+/i.test(cell)){
+          sec = cell.trim(); break;
+        }
+      }
+    }
+    // Grade usually at H1 (col 7)
+    if (grid[0] && grid[0][7]) grade = String(grid[0][7]).trim();
+    if (grade && sec && !sec.includes(grade)) sec = sec + (sec.includes('-') ? ' ' : '-') + grade;
+    return {kind: 'lnt_combination', section: sec};
+  }
+  if (grid.length >= 2 && grid[0] && grid[0].length >= 2){
+    const firstRowAllNumbers = grid.slice(1, 5).every(r => r && typeof r[0] === 'number' && typeof r[1] === 'number');
+    if (firstRowAllNumbers) return {kind: 'simple_two_col'};
+  }
+  return {kind: 'unknown'};
+}
+
+function applyLntCombination(grid, info){
+  // Format (1-indexed columns):
+  //   B(2) bar_lgth_mm | C(3) bar_qty | D(4) Cut A | E(5) qty_A | F(6) EB1
+  //   G(7) Cut B | H(8) qty_B | I(9) EB2 | J(10) Cut C | K(11) qty_C | L(12) EB3
+  //   M(13) Cut D | N(14) qty_D | O(15) final_EB
+  // AUTO-CALIBRATE: compute implied pincher = (bar - sum_cuts - final_eb) / n_cuts
+  // (if manual treats kerf as 0, OPTIMUS will too)
+  const stocksByLen = {};
+  const demands = {};
+  let totalBars = 0, totalCuts = 0, sumScrap = 0, sumRaw = 0;
+
+  for (let r = 3; r < Math.min(grid.length, 280); r++){
+    const row = grid[r];
+    if (!row) continue;
+    const stockLen = row[1];
+    const stockQty = row[2];
+    if (typeof stockLen !== 'number' || stockLen < 100) continue;
+    if (typeof stockQty !== 'number' || stockQty <= 0) continue;
+
+    stocksByLen[stockLen] = (stocksByLen[stockLen] || 0) + stockQty;
+    totalBars += stockQty;
+    sumRaw += stockLen * stockQty;
+
+    // Cuts at (3,4), (6,7), (9,10), (12,13)
+    [[3,4],[6,7],[9,10],[12,13]].forEach(([li,qi]) => {
+      const cutLen = row[li];
+      const cutQty = row[qi];
+      if (typeof cutLen === 'number' && cutLen > 0 && typeof cutQty === 'number' && cutQty > 0){
+        demands[cutLen] = (demands[cutLen] || 0) + cutQty * stockQty;
+        totalCuts += cutQty * stockQty;
+      }
+    });
+
+    // Final end-bit (col 15 in some sheets, col 6 in single-cut rows)
+    const finalEB = row[14];   // 1-indexed = 15
+    if (typeof finalEB === 'number' && finalEB >= 0){
+      sumScrap += finalEB * stockQty;
+    }
+  }
+
+  // ─── AUTO-CALIBRATE PINCHER ───
+  // For each row: bar_length - sum(cuts) - final_eb = kerf_per_bar.
+  // Implied pincher per cut = kerf_per_bar / n_cuts_in_that_bar.
+  // Take the median across all rows where it's well-defined.
+  const pincherSamples = [];
+  for (let r = 3; r < Math.min(grid.length, 280); r++){
+    const row = grid[r];
+    if (!row) continue;
+    const bar = row[1];
+    const bqty = row[2];
+    if (typeof bar !== 'number' || bar < 100) continue;
+    if (typeof bqty !== 'number' || bqty <= 0) continue;
+    let sumCuts = 0, nCuts = 0;
+    [[3,4],[6,7],[9,10],[12,13]].forEach(([li,qi]) => {
+      const L = row[li], q = row[qi];
+      if (typeof L === 'number' && L > 0 && typeof q === 'number' && q > 0){
+        sumCuts += L * q;
+        nCuts += q;
+      }
+    });
+    const eb = (typeof row[14] === 'number') ? row[14] : 0;
+    if (nCuts === 0) continue;
+    const impliedKerf = bar - sumCuts - eb;
+    const pinPerCut = impliedKerf / nCuts;
+    // Sanity: only accept values 0-200 mm
+    if (pinPerCut >= 0 && pinPerCut <= 200){
+      pincherSamples.push(pinPerCut);
+    }
+  }
+  let detectedPincher = null;
+  if (pincherSamples.length >= 3){
+    pincherSamples.sort((a,b) => a - b);
+    detectedPincher = pincherSamples[Math.floor(pincherSamples.length/2)];  // median
+  }
+
+  // Apply section
+  if (info.section){
+    document.getElementById('sectionCode').value = info.section;
+    onSectionChange();
+  }
+  // Also detect MAX cuts/bar from uploaded Excel
+  let maxCutsObserved = 0;
+  for (let r = 3; r < Math.min(grid.length, 280); r++){
+    const row = grid[r];
+    if (!row) continue;
+    if (typeof row[1] !== 'number' || row[1] < 100) continue;
+    let nu = 0;       // unique cut-length count
+    [[3],[6],[9],[12]].forEach(([li]) => {
+      const L = row[li];
+      if (typeof L === 'number' && L > 0) nu++;
+    });
+    if (nu > maxCutsObserved) maxCutsObserved = nu;
+  }
+  if (maxCutsObserved > 4){
+    // Excel has more unique cut lengths per bar than 4 — adjust max_open
+    const target = Math.min(12, maxCutsObserved);
+    document.getElementById('maxOpen').value = String(target);
+  }
+
+  // Apply auto-calibrated pincher (override section master if found)
+  if (detectedPincher !== null){
+    const rounded = Math.round(detectedPincher);
+    document.getElementById('pincher').value = rounded;
+    const hint = document.getElementById('sectionInfo');
+    if (rounded === 0){
+      hint.textContent = `⚙ Auto-calibrated from Excel: pincher = 0 mm (manual treats kerf as zero)`;
+    } else {
+      hint.textContent = `⚙ Auto-calibrated from Excel: pincher = ${rounded} mm (median of ${pincherSamples.length} rows)`;
+    }
+    hint.className = 'hint ok';
+  }
+  // Reset and fill stock table
+  document.getElementById('stockBody').innerHTML = '';
+  const stockArr = Object.entries(stocksByLen).map(([L,q]) => ({len: +L, qty: q}))
+                                              .sort((a,b) => a.len - b.len);
+  for (let i = 0; i < Math.max(ROWS, stockArr.length); i++) addStockRow();
+  stockArr.forEach((s, i) => {
+    const tr = document.getElementById('stockBody').children[i];
+    tr.querySelectorAll('input')[0].value = s.len;
+    tr.querySelectorAll('input')[1].value = s.qty;
+  });
+  // Demand table
+  document.getElementById('demandBody').innerHTML = '';
+  const demArr = Object.entries(demands).sort((a,b) => +b[0] - +a[0]);
+  for (let i = 0; i < Math.max(ROWS, demArr.length); i++) addDemandRow();
+  demArr.forEach((d, i) => {
+    const tr = document.getElementById('demandBody').children[i];
+    tr.querySelectorAll('input')[1].value = d[0];
+    tr.querySelectorAll('input')[2].value = d[1];
+  });
+  onStockChange(); onDemandChange();
+
+  // Store the Excel's own KPIs for comparison after re-optimization
+  state.uploadedExcelKpis = {
+    bars: totalBars,
+    rawMm: sumRaw,
+    scrapMm: sumScrap,
+    scrapPct: sumRaw ? (sumScrap / sumRaw * 100) : 0,
+    cuts: totalCuts,
+    stockEntries: stockArr.length,
+    demandEntries: demArr.length,
+  };
+}
+
+function applySimpleStockDemand(grid){
+  // Assume: row 0 header, then col0=length col1=qty for stock, then blank, then demand
+  // Heuristic: split where there's a blank row
+  const rows = grid.slice(1).filter(r => r && (r[0] || r[1]));
+  const blanks = grid.slice(1).map((r,i) => (!r || !r[0]) ? i : -1).filter(i => i >= 0);
+  // Simplest: first half = stock, second = demand
+  const half = Math.ceil(rows.length / 2);
+  const stockArr = rows.slice(0, half).filter(r => typeof r[0] === 'number');
+  const demandArr = rows.slice(half).filter(r => typeof r[0] === 'number');
+  document.getElementById('stockBody').innerHTML = '';
+  for (let i = 0; i < Math.max(ROWS, stockArr.length); i++) addStockRow();
+  stockArr.forEach((s,i) => {
+    const tr = document.getElementById('stockBody').children[i];
+    tr.querySelectorAll('input')[0].value = s[0];
+    tr.querySelectorAll('input')[1].value = s[1];
+  });
+  document.getElementById('demandBody').innerHTML = '';
+  for (let i = 0; i < Math.max(ROWS, demandArr.length); i++) addDemandRow();
+  demandArr.forEach((d,i) => {
+    const tr = document.getElementById('demandBody').children[i];
+    tr.querySelectorAll('input')[1].value = d[0];
+    tr.querySelectorAll('input')[2].value = d[1];
+  });
+  onStockChange(); onDemandChange();
+}
+
+function restoreFromData(d){
+  ['project','section','lot','runDate','planner','rmEmbossing','rmIdNo',
+   'pincher','endTrim','endCutMax','maxOpen','mrpMode'].forEach(k => {
+    const id = ({project:'projectCode',section:'sectionCode',lot:'lotNo',runDate:'runDate',
+                 planner:'plannerName',rmEmbossing:'rmEmbossing',rmIdNo:'rmIdNo',
+                 pincher:'pincher',endTrim:'endTrim',endCutMax:'endCutMax',
+                 maxOpen:'maxOpen',mrpMode:'mrpMode'})[k];
+    if (d[k] !== undefined && id) document.getElementById(id).value = d[k];
+  });
+  onSectionChange();
+  document.getElementById('stockBody').innerHTML = '';
+  const stocks = d.stocks || d.stock || [];
+  for (let i = 0; i < Math.max(ROWS, stocks.length); i++) addStockRow();
+  stocks.forEach((s, i) => {
+    const tr = document.getElementById('stockBody').children[i];
+    tr.querySelectorAll('input')[0].value = s.len;
+    tr.querySelectorAll('input')[1].value = s.qty;
+  });
+  document.getElementById('demandBody').innerHTML = '';
+  const dems = d.demands || d.demand || [];
+  for (let i = 0; i < Math.max(ROWS, dems.length); i++) addDemandRow();
+  dems.forEach((dm, i) => {
+    const tr = document.getElementById('demandBody').children[i];
+    tr.querySelectorAll('input')[0].value = dm.mark || '';
+    tr.querySelectorAll('input')[1].value = dm.len;
+    tr.querySelectorAll('input')[2].value = dm.qty;
+  });
+  onStockChange(); onDemandChange();
+}
+
+/* ═══ DEMO DATA ═══════════════════════════════════════════════ */
+function loadDemo(){
+  // OMAN L65X65X4 case (real user data — 1.57% scrap match)
+  const data = {
+    project: 'OMAN-DEMO',
+    section: 'L65X65X4-BSEN S275JR',
+    lot: 'LOT 2,3,4',
+    runDate: new Date().toISOString().slice(0,10),
+    planner: 'Demo',
+    rmEmbossing: 'L&T-OMAN-2026',
+    rmIdNo: 'RMID-65X65X4-OMAN',
+    pincher: 25, endTrim: 0, endCutMax: 200, maxOpen: 4, mrpMode: '',
+    stocks: [{len:6500,qty:16},{len:12000,qty:68}],
+    demands: [
+      {len:5069,qty:8},{len:4234,qty:60},{len:3328,qty:16},{len:3116,qty:60},
+      {len:3112,qty:15},{len:3039,qty:8},{len:2520,qty:60},{len:2484,qty:8},
+      {len:2041,qty:60},{len:1345,qty:8}
+    ]
+  };
+  restoreFromData(data);
+  setStatus('✓ OMAN demo loaded · click GENERATE to optimize', 'ok');
+}
+
+/* ═══ SAVE/LOAD JSON ════════════════════════════════════════════ */
+function saveJSON(){
+  const data = {
+    project:    document.getElementById('projectCode').value,
+    section:    document.getElementById('sectionCode').value,
+    lot:        document.getElementById('lotNo').value,
+    runDate:    document.getElementById('runDate').value,
+    planner:    document.getElementById('plannerName').value,
+    rmEmbossing:document.getElementById('rmEmbossing').value,
+    rmIdNo:     document.getElementById('rmIdNo').value,
+    pincher:    document.getElementById('pincher').value,
+    endTrim:    document.getElementById('endTrim').value,
+    endCutMax:  document.getElementById('endCutMax').value,
+    maxOpen:    document.getElementById('maxOpen').value,
+    mrpMode:    document.getElementById('mrpMode').value,
+    stocks: readStock(),
+    demands: readDemand(),
+    scenarios: state.scenarios.map(s => s.error ? s : {
+      id:s.id, name:s.name, kpis:s.kpis,
+      result:s.result, totalShort:s.totalShort
+    }),
+    activeScenario: state.activeScenario,
+    appName: 'OPTIMUS',
+    developer: 'Sumanta Gayen',
+    savedAt: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const safeProj = (data.project || 'run').replace(/[^a-zA-Z0-9_-]/g,'_');
+  const safeSec = (data.section || 'sec').replace(/[^a-zA-Z0-9_-]/g,'_');
+  a.download = `OPTIMUS_${safeProj}_${safeSec}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ═══ EXCEL EXPORT ═════════════════════════════════════════════ */
+function exportExcel(){
+  if (!state.scenarios.length) return alert('Generate a plan first');
+  const sc = state.scenarios[state.activeScenario];
+  const L  = state.lastInput;
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Summary
+  const sum = [
+    ['OPTIMUS — Cutting Plan Report'],
+    ['Optimize every millimeter · by Sumanta Gayen'],
+    [],
+    ['Project',        L.project],
+    ['Section',        L.section],
+    ['Lot',            L.lot],
+    ['Run Date',       document.getElementById('runDate').value],
+    ['Planner',        L.planner],
+    ['RM Embossing',   L.rmEmbossing],
+    ['RM ID No.',      L.rmIdNo],
+    ['Pincher (mm)',   L.pincher],
+    ['Max End-Cut (mm)', L.endCutMax],
+    ['Reusable Offcut Min (mm)', L.minOffcut],
+    ['Max Cuts/Bar',   L.maxOpen],
+    [],
+    ['SCRAP DASHBOARD'],
+    ['Total Scrap %',     sc.kpis.totalScrapPct.toFixed(2)],
+    ['Pincher %',         sc.kpis.kerfPct.toFixed(2)],
+    ['Extra End-Cut %',   sc.kpis.scrapPct.toFixed(2)],
+    ['Material Util %',   sc.kpis.utilStrict.toFixed(2)],
+    ['Reusable Offcut %', sc.kpis.offcutPct.toFixed(2)],
+    [],
+    ['Total Bars',  sc.kpis.totalBars],
+    ['Inv Bars',    sc.kpis.physBars],
+    ['New PR Bars', sc.kpis.virtualBars],
+    ['Patterns',    sc.kpis.patterns],
+    ['Demand Met',  L.demands.reduce((a,b)=>a+b.qty,0) - sc.totalShort],
+    ['Shortfall',   sc.totalShort],
+    ['Scenario',    sc.name],
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), 'Summary');
+
+  // Sheet 2: Cutting Plan
+  const planHdr = ['#','Stock Length','Source','Bars','Cut A','×A','Cut B','×B','Cut C','×C','Cut D','×D','End-Bit','Util %','Status'];
+  const planRows = sc.result.map((r, i) => {
+    const cuts = [];
+    r.pattern.forEach(([L,c]) => cuts.push([L,c]));
+    while (cuts.length < 4) cuts.push([null,null]);
+    const util = (r.cutMm/r.stockLen*100).toFixed(1);
+    let stat;
+    if (r.waste < 50) stat='EXCELLENT';
+    else if (r.waste < 200) stat='GOOD';
+    else if (r.waste < L.minOffcut) stat='OK';
+    else stat='OFFCUT';
+    return [i+1, r.stockLen, r.isVirtual?'NEW (PR)':'INV', r.bars,
+      ...cuts.flat(), Math.max(0,r.waste), util+'%', stat];
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([planHdr, ...planRows]), 'Cutting Plan');
+
+  // Sheet 3: Demand
+  const dem = {};
+  L.demands.forEach(d => dem[d.len] = (dem[d.len]||0) + d.qty);
+  const delivered = {};
+  sc.result.forEach(r => r.pattern.forEach(([Ll,c]) => delivered[Ll] = (delivered[Ll]||0) + c*r.bars));
+  const demRows = [['Length (mm)','Required','Delivered','Shortfall','Status']];
+  Object.entries(dem).sort((a,b)=>+b[0]-+a[0]).forEach(([L,req]) => {
+    const del = delivered[+L] || 0;
+    const sh = Math.max(0, req-del);
+    demRows.push([+L, req, del, sh, sh > 0 ? 'SHORT' : 'OK']);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(demRows), 'Demand');
+
+  // Sheet 4: Offcuts
+  const ofRows = [['Length (mm)','Qty','Reusable','Category']];
+  const ofMap = {};
+  sc.result.filter(r => r.offcut).forEach(r => ofMap[r.waste] = (ofMap[r.waste]||0) + r.bars);
+  Object.entries(ofMap).sort((a,b)=>+b[0]-+a[0]).forEach(([L,n]) => {
+    let cat = 'short';
+    if (+L >= 2000) cat = 'long-reusable';
+    else if (+L >= 1000) cat = 'medium-reusable';
+    ofRows.push([+L, n, +L >= L.minOffcut ? 'YES' : 'NO', cat]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ofRows), 'Offcuts');
+
+  // Sheet 5: All Scenarios
+  const scnRows = [['Scenario','Total Scrap %','Pincher %','End-Cut %','Util %','Bars','Patterns','Shortfall','Recommended']];
+  state.scenarios.forEach(s => {
+    if (s.error){ scnRows.push([s.name,'ERROR','','','','','','',s.error]); return; }
+    scnRows.push([
+      s.name, s.kpis.totalScrapPct.toFixed(2), s.kpis.kerfPct.toFixed(2),
+      s.kpis.scrapPct.toFixed(2), s.kpis.utilStrict.toFixed(2),
+      s.kpis.totalBars, s.kpis.patterns, s.totalShort, s.recommended ? 'YES' : ''
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(scnRows), 'All Scenarios');
+
+  // Sheet 6: Scrap Report
+  const scrapHdr = ['#','Stock Length','Bars','End-Bit (mm)','End-Bit (kg)','Pincher (kg)','Total Loss (kg)','Tier'];
+  const scrapData = sc.result.map((r,i) => {
+    const kgPerM = (sec ? sec[1] : 0);
+    const ebKg = r.waste/1000 * kgPerM * r.bars;
+    const kerfKg = r.cutN * L.pincher /1000 * kgPerM * r.bars;
+    const tier = r.waste<=200 ? 'T1' : r.waste<=350 ? 'T2' : r.waste<=500 ? 'T3' : 'T4 (reusable)';
+    return [i+1, r.stockLen, r.bars, r.waste, ebKg.toFixed(1), kerfKg.toFixed(1), (ebKg+kerfKg).toFixed(1), tier];
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([scrapHdr, ...scrapData]), 'Scrap Report');
+
+  // Sheet 7: End-Cut Report (tier breakdown)
+  const tierAgg = {1:0, 2:0, 3:0, 4:0};
+  const tierKg = {1:0, 2:0, 3:0, 4:0};
+  sc.result.forEach(r => {
+    const t = r.waste<=200 ? 1 : r.waste<=350 ? 2 : r.waste<=500 ? 3 : 4;
+    tierAgg[t] += r.bars;
+    tierKg[t] += r.waste/1000 * (sec?sec[1]:0) * r.bars;
+  });
+  const ecHdr = ['Tier','Range','Bars','Weight (kg)','Status'];
+  const ecData = [
+    ['T1','≤ 200 mm', tierAgg[1], tierKg[1].toFixed(1), 'OK (default)'],
+    ['T2','201-350 mm', tierAgg[2], tierKg[2].toFixed(1), tierAgg[2]>0 ? 'Approval required' : '—'],
+    ['T3','351-500 mm', tierAgg[3], tierKg[3].toFixed(1), tierAgg[3]>0 ? 'Approval required' : '—'],
+    ['T4','>500 mm', tierAgg[4], tierKg[4].toFixed(1), 'Reusable offcut'],
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([ecHdr, ...ecData]), 'End-Cut Report');
+
+  // Sheet 8: Balance Stock Report
+  const balHdr = ['Stock Length','Input Qty','Used','Balance','Balance Weight (kg)','Status'];
+  const usedByLen2 = {};
+  sc.result.forEach(r => { if (!r.isVirtual) usedByLen2[r.stockLen] = (usedByLen2[r.stockLen]||0)+r.bars; });
+  const inputStockByLen2 = {};
+  L.stocks.forEach(s => inputStockByLen2[s.len] = (inputStockByLen2[s.len]||0)+s.qty);
+  const balData = Object.entries(inputStockByLen2).map(([Ll, qty]) => {
+    const used = usedByLen2[+Ll] || 0;
+    const balance = qty - used;
+    const bkg = balance / 1000 * (+Ll) * (sec?sec[1]:0);
+    const status = balance === 0 ? 'FULLY USED' : balance < qty/2 ? 'PARTLY USED' : 'MOSTLY UNUSED';
+    return [+Ll, qty, used, balance, bkg.toFixed(1), status];
+  }).sort((a,b) => b[0] - a[0]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([balHdr, ...balData]), 'Balance Stock');
+
+  // Sheet 9: Pending Fabrication
+  const pendHdr = ['Mark','Cut Length','Required','Completed','Pending','Done %','Pending Weight (kg)','Status'];
+  const demanded2 = {};
+  L.demands.forEach(d => {
+    const k = (d.mark || '') + '__' + d.len;
+    demanded2[k] = demanded2[k] || {mark:d.mark||'', len:d.len, required:0};
+    demanded2[k].required += d.qty;
+  });
+  const delivered2 = {};
+  sc.result.forEach(r => r.pattern.forEach(([Ll,c]) => delivered2[Ll] = (delivered2[Ll]||0) + c*r.bars));
+  const pendData = Object.values(demanded2).map(j => {
+    const totalForLen = L.demands.filter(d => d.len === j.len).reduce((a,b)=>a+b.qty,0);
+    const share = totalForLen ? (j.required / totalForLen) : 0;
+    const got = Math.round((delivered2[j.len]||0) * share);
+    const done = Math.min(got, j.required);
+    const pending = Math.max(0, j.required - got);
+    const pendKg = pending / 1000 * j.len * (sec?sec[1]:0);
+    const status = pending === 0 ? 'COMPLETE' : done === 0 ? 'NOT STARTED' : 'PARTIAL';
+    const donePct = j.required ? (done/j.required*100).toFixed(0)+'%' : '0%';
+    return [j.mark, j.len, j.required, done, pending, donePct, pendKg.toFixed(1), status];
+  }).sort((a,b) => b[1] - a[1]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([pendHdr, ...pendData]), 'Pending Fabrication');
+
+  const safeProj = (L.project || 'run').replace(/[^a-zA-Z0-9_-]/g,'_');
+  XLSX.writeFile(wb, `OPTIMUS_${safeProj}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportCSV(kind){
+  if (!state.scenarios.length) return alert('Generate a plan first');
+  const sc = state.scenarios[state.activeScenario];
+  let csv = '';
+  if (kind === 'plan'){
+    csv = '#,Stock Length,Source,Bars,Cut A,xA,Cut B,xB,Cut C,xC,Cut D,xD,End-Bit,Util %,Status\n';
+    sc.result.forEach((r, i) => {
+      const cuts = []; r.pattern.forEach(([L,c]) => cuts.push([L,c]));
+      while (cuts.length < 4) cuts.push(['','']);
+      const util = (r.cutMm/r.stockLen*100).toFixed(1);
+      csv += [i+1, r.stockLen, r.isVirtual?'NEW':'INV', r.bars,
+              ...cuts.flat(), Math.max(0,r.waste), util+'%',
+              r.waste<50?'EXCELLENT':r.waste<200?'GOOD':'OK'].join(',') + '\n';
+    });
+  }
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `OPTIMUS_${kind}.csv`;
+  a.click();
+}
+
+/* ═══ RESET ═════════════════════════════════════════════════════ */
+function resetAll(){
+  if (!confirm('Reset everything?')) return;
+  ['projectCode','sectionCode','lotNo','plannerName','rmEmbossing','rmIdNo'].forEach(id =>
+    document.getElementById(id).value = '');
+  document.getElementById('runDate').valueAsDate = new Date();
+  document.getElementById('pincher').value = 80;
+  document.getElementById('endTrim').value = 0;
+  document.getElementById('endCutMax').value = 200;
+  document.getElementById('maxOpen').value = 4;
+  document.getElementById('mrpMode').value = '';
+  document.getElementById('stockBody').innerHTML = '';
+  document.getElementById('demandBody').innerHTML = '';
+  for (let i = 0; i < ROWS; i++){ addStockRow(); addDemandRow(); }
+  document.getElementById('btnPrint').style.display = 'none';
+  state = {scenarios:[], activeScenario:0, lastInput:null, comparisons:0};
+  showTab('input');
+  setStatus('Reset complete. Configure new run.', '');
+  onStockChange(); onDemandChange();
+}
+
+/* ═══ SERVER ════════════════════════════════════════════════════ */
+async function checkServer(){
+  const url = (document.getElementById('serverUrl').value || '').trim().replace(/\/$/,'');
+  const led = document.getElementById('serverLed');
+  const hint = document.getElementById('serverHint');
+  if (!url){
+    led.textContent = 'Browser engine';
+    led.classList.add('off');
+    hint.textContent = 'not connected';
+    hint.style.color = 'var(--ink-3)';
+    return;
+  }
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 3000);
+    const r = await fetch(url + '/health', {signal: ctrl.signal});
+    const d = await r.json();
+    led.textContent = `Server · ${d.solver}`;
+    led.classList.remove('off');
+    hint.textContent = '✓ ' + d.solver + ' v' + d.version;
+    hint.style.color = 'var(--green)';
+  } catch(e){
+    led.textContent = 'Browser engine';
+    led.classList.add('off');
+    hint.textContent = '✗ unreachable';
+    hint.style.color = 'var(--red)';
+  }
+}
+
+async function showHistory(){
+  const url = (document.getElementById('serverUrl').value || '').trim().replace(/\/$/,'');
+  if (!url){ alert('Set Server URL first to view history.'); return; }
+  try {
+    const r = await fetch(url + '/runs?limit=20');
+    const runs = await r.json();
+    if (!runs.length){ alert('No history yet.'); return; }
+    let html = `<div class="modal" onclick="if(event.target===this)this.remove()">
+      <div class="modal-content">
+        <h2 class="display" style="font-size:18px;margin-bottom:14px">📊 Run History · ${runs.length} runs</h2>
+        <table class="cp-tbl"><thead><tr><th>Run</th><th>Date</th><th>Project</th><th>Section</th><th>Lot</th><th>Bars</th><th>Util %</th><th>Scrap %</th></tr></thead><tbody>`;
+    runs.forEach(r => {
+      const dt = new Date(r.created_at).toLocaleString('en-IN', {dateStyle:'short', timeStyle:'short'});
+      html += `<tr><td><b>#${r.run_id}</b></td><td>${dt}</td><td>${r.project||'—'}</td><td>${r.section}</td><td>${r.lot||'—'}</td><td>${r.bars_total}</td><td>${(r.util_pct||0).toFixed(1)}%</td><td>${(r.scrap_pct||0).toFixed(2)}%</td></tr>`;
+    });
+    html += `</tbody></table>
+      <div style="margin-top:18px;text-align:right"><button class="btn" onclick="this.closest('.modal').remove()">Close</button></div>
+      </div></div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+  } catch(e){ alert('Failed: ' + e.message); }
+}
+
+// Boot
+init();
+
+</script>
+</body>
+</html>
